@@ -1,0 +1,17 @@
+<div  ng-controller="ThermostatCtrl">
+    Climate Control Panel
+
+    <ul class="thermostats" >
+        <li class="thermostats__element" ng-repeat="thermostat in thermostats">
+            <span>Thermostat {{$index}}</span>
+            <span>Room temp: {{thermostat.roomTemp}}</span>
+            <span>Set temp: {{thermostat.tempSetpoint}}</span>
+            <span>Status: {{thermostat.enabled ? 'on' : 'off'}}</span>
+
+            <button ng-click="incrementTemp(thermostat, $index)">+</button>
+            <button ng-click="decrementTemp(thermostat, $index)">-</button>
+
+            <button ng-click="toggleEnable(thermostat, $index)">toggle</button>
+        </li>
+    </ul>
+</div>

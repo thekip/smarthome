@@ -1,0 +1,15 @@
+{
+  "name": "smarthome",
+  "version": "0.0.1",
+  "dependencies": {
+    "modbus-rtu": "*",
+    "bluebird": "*",
+    "moment": "*",
+    "serialport": "*",
+    "lodash": "*",
+    "q": "*",
+    "microevent": "*",
+    "express": "*",
+    "socket.io": "1.3.5"
+  }
+}

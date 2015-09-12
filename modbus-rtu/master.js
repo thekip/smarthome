@@ -12,6 +12,9 @@ module.exports = Master;
 
 function Master(serialPort, onReady) {
     var self = this;
+    serialPort.on('error', function(err){
+        console.error(err);
+    })
     this.serial = new SerialHelper(serialPort, function(){
         if (onReady)
             onReady(self);

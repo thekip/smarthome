@@ -1,6 +1,10 @@
-<div  ng-controller="ThermostatCtrl">
+<div>
     Climate Control Panel
 
+    <div class="ac-unit">
+        tempSetpoint: {{ acUnit.tempSetpoint }} $actualSetpoint: {{ acUnit.$actualSetpoint}} <br />
+        $ambientTempAcUnit: {{acUnit.$ambientTempAcUnit}}  $ambientTemp: {{acUnit.ambientTemp}}
+    </div>
     <ul class="thermostats" >
         <li class="thermostats__element" ng-repeat="thermostat in thermostats">
             <span>Thermostat {{$index}}</span>

@@ -8,6 +8,7 @@ module.exports = function(ngModule){
             console.log(resp);
             $scope.$apply(function(){
                 $scope.thermostats = resp.thermostats;
+                $scope.acUnit = resp.acUnit;
             })
         });
 
@@ -21,20 +22,21 @@ module.exports = function(ngModule){
             changeTemp(thermostat, $index);
         };
 
-        $scope.toggleEnable = function(thermostat, $index) {
+        $scope.toggleEnable = _.debounce(function(thermostat, $index) {
             thermostat.enabled = !thermostat.enabled;
             socket.emit('thermostat.setEnable', {
                 thermostat: $index,
                 value: thermostat.enabled,
             })
-        };
+        }, 300);
 
-        function changeTemp(thermostat, $index) {
+        var changeTemp = _.debounce(function changeTemp(thermostat, $index) {
             socket.emit('thermostat.changeTemp', {
                 thermostat: $index,
                 setpoint: thermostat.tempSetpoint,
             })
-        }
+        }, 300);
+
 
         socket.on('thermostat.change', function(resp){
             console.log(resp);

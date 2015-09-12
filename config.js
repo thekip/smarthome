@@ -4,9 +4,9 @@ module.exports = {
         termostatsAdresses: [10, 11, 12]
     },
     serialPort: {
-        device: "/dev/ttyUSB0",
-        params: {
-            baudrate: 2400
+        device: '/dev/ttyAMA0', //"/dev/ttyUSB0"
+            params: {
+            baudrate: 19200 //2400
         }
 
     }

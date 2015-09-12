@@ -1,7 +1,9 @@
 var _ = require('lodash');
-//var constants = require('./modbus-rtu/constants');
-//constants.DEBUG = true;
+var constants = require('./modbus-rtu/constants');
+constants.DEBUG = true;
 var devices = require('./controlLoop');
+return;
+
 var app = require('./server').app;
 var io = require('./server').io;
 
@@ -39,7 +41,7 @@ _.forEach(devices.thermostats, function (thermostat, i) {
     thermostat.bind('change', function () {
         io.emit('thermostat.change', {
             index: i,
-            data: thermostat
+            data: prepareDto(thermostat)
         })
     });
 });

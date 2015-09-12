@@ -1,6 +1,10 @@
 {
   "name": "smarthome",
   "version": "0.0.1",
+  "scripts": {
+    "watch": "forever  -w  --watchIgnore front*  index.js",
+    "forever": "forever start index.js"
+  },
   "dependencies": {
     "modbus-rtu": "*",
     "bluebird": "*",

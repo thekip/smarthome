@@ -53,36 +53,40 @@ AcUnit.prototype.update = function () {
 
 AcUnit.prototype.setTempSetpoint = function (setpoint) {
     return this._modbusMaster.writeSingleRegister(this._modbusAddr, TEMP_SETPOINT_REGISTER, setpoint)
-}
+};
+
+AcUnit.prototype.resetControls = function(){
+    this.setDefaultAmbientTemp();
+};
 
 AcUnit.prototype.setAmbientTemp = function (temp) {
     return this._modbusMaster.writeSingleRegister(this._modbusAddr, AMBIENT_TEMP_EXTERNAL_REGISTER, temp)
-}
+};
 
 AcUnit.prototype.setDefaultAmbientTemp = function (temp) {
     return this._modbusMaster.writeSingleRegister(this._modbusAddr, AMBIENT_TEMP_EXTERNAL_REGISTER, AMBIENT_TEMP_DEFAULT)
-}
+};
 
 AcUnit.prototype.setEnabled = function (value) {
     return this._modbusMaster.writeSingleRegister(this._modbusAddr, ENABLED_REGISTER, +value)
-}
+};
 
 AcUnit.prototype.toString = function () {
     return 'Status: ' + (this.enabled ? 'on' : 'off ') +
         '; Set room temp: ' + this.ambientTemp + 'C; Set setpoint: ' + this.tempSetpoint + 'C; \n\r' +
             'Real AC ambient temp: ' + this.$ambientTempAcUnit + 'C; Real AC setpoint: ' + this.$actualSetpoint + 'C;'
-}
+};
 
 AcUnit.prototype.enable = function () {
     var ac = this;
     return this.setEnabled(1).then(function(){
         return ac.update();
     });
-}
+};
 
 AcUnit.prototype.disable = function () {
     var ac = this;
     return this.setEnabled(0).then(function(){
         return ac.update();
     });
-}
+};

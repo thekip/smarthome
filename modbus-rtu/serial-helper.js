@@ -22,14 +22,18 @@ function SerialHelper(serialPort, onReady) {
     var onData = _.debounce(function () {
         var buffer = Buffer.concat(self.buffers);
         constants.DEBUG && console.log('resp', buffer);
+        console.log('debounce calles');
         self.currentTask.deferred.resolve(buffer);
 
         self.buffers = [];
     }, constants.END_PACKET_TIMEOUT);
 
     serialPort.on('data', function (data) {
-        self.buffers.push(data);
-        onData(data);
+        console.log(data);
+        if (self.currentTask) {
+            self.buffers.push(data);
+            onData(data);
+        }
     });
 }
 

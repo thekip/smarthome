@@ -1,6 +1,6 @@
 var crc = require('crc');
 var BufferPut = require('bufferput');
-var Q = require('q');
+var Promise = require("bluebird");
 var SerialHelper = require('./serial-helper');
 var constants = require('./constants');
 var binary = require('binary');
@@ -61,24 +61,22 @@ Master.prototype.writeSingleRegister = function (slave, register, value, retry) 
     var self = this;
 
     var performRequest = function(retry){
-        var deferred = Q.defer();
-
-        self.request(packet)
-            .catch(function () {
-                if (retry > 0) {
-                    console.log('Error: retry ' + retry);
-                    performRequest(retry--).then(
-                        function (data) {
-                            deffered.resolve(data);
-                        }, function (err) {
-                            deffered.reject(err);
-                        });
-                }
-            }).then(function (data) {
-                deffered.resolve(data);
-            });
-
-        return deferred.promise;
+        return new Promise(function(resolve, reject) {
+            self.request(packet)
+                .catch(function () {
+                    if (retry > 0) {
+                        console.log('Error: retry ' + retry);
+                        performRequest(retry--).then(
+                            function (data) {
+                                resolve(data);
+                            }, function (err) {
+                                reject(err);
+                            });
+                    }
+                }).then(function (data) {
+                    resolve(data);
+                });
+        });
     };
 
     return performRequest(retry ? retry : 3);

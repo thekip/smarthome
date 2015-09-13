@@ -2,46 +2,34 @@ var _ = require('lodash');
 var constants = require('./modbus-rtu/constants');
 constants.DEBUG = true;
 var devices = require('./controlLoop');
-return;
 
 var app = require('./server').app;
 var io = require('./server').io;
 
 io.on('connection', function(socket){
     console.log('a user connected');
+
     socket.emit('data', {
         acUnit: prepareDto(devices.ac),
-        thermostats: _.map(devices.thermostats, function (thermostat) {
-            return prepareDto(thermostat);
+        rooms: _.map(devices.rooms, function (room) {
+            return prepareDto(room);
         })
     });
 
-    socket.on('thermostat.changeTemp', function(data){
-        devices.thermostats[data.thermostat].setTempSetpoint(data.setpoint)
-            .catch(function(err){
-                console.log(err);
-            }).then(function(data){
-                console.log(data);
-            })
-            .done();
+    socket.on('gui.changeRoomTemp', function(data){
+        devices.rooms[data.id].setTempSetpoint(data.setpoint).done();
     });
 
-    socket.on('thermostat.setEnable', function (data) {
-        devices.thermostats[data.thermostat].setEnable(data.value)
-            .catch(function (err) {
-                console.log(err);
-            }).then(function (data) {
-                console.log(data);
-            })
-            .done();
+    socket.on('gui.setRoomEnable', function (data) {
+        devices.rooms[data.id].setEnable(data.value).done();
     });
 });
 
-_.forEach(devices.thermostats, function (thermostat, i) {
-    thermostat.bind('change', function () {
-        io.emit('thermostat.change', {
+_.forEach(devices.rooms, function (room, i) {
+    room.bind('change', function () {
+        io.emit('room.change', {
             index: i,
-            data: prepareDto(thermostat)
+            data: prepareDto(room)
         })
     });
 });
@@ -51,28 +39,3 @@ function prepareDto(obj){
         return key.indexOf("_") === 0;
     })
 }
-
-app.get('/api', function (req, res) {
-    res.json({
-        acUnit: prepareDto(devices.ac),
-        thermostats: _.map(devices.thermostats, function (thermostat) {
-           return prepareDto(thermostat);
-        })
-    });
-});
-
-app.get('/api/ac/enable', function (req, res) {
-    devices.ac.enable().done(function(){
-        res.json({
-            acUnit: prepareDto(devices.ac)
-        });
-    });
-});
-
-app.get('/api/ac/disable', function (req, res) {
-    devices.ac.disable().done(function(){
-        res.json({
-            acUnit: prepareDto(devices.ac)
-        });
-    });
-});

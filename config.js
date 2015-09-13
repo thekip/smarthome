@@ -1,14 +1,27 @@
 module.exports = {
     modbusDevices: {
-        acUnitAdress: 1,
-        termostatsAdresses: [10, 11, 12]
+        acUnitAddress: 1,
+        analogShieldAddress: 2,
     },
+    rooms: [
+        {
+            thermostatAddress: 10,
+            dumperPort: 0
+        },
+        {
+            thermostatAddress: 11,
+            dumperPort: 1
+        },
+        {
+            thermostatAddress: 12,
+            dumperPort: 2
+        }
+    ],
     serialPort: {
-        device: '/dev/ttyAMA0', //"/dev/ttyUSB0"
+        device: '/dev/ttyUSB0', //"/dev/ttyUSB0"
             params: {
             baudrate: 19200 //2400
         }
-
     }
 
 }

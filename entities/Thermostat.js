@@ -17,6 +17,9 @@ var ENABLED_REGISTER = 0,
     MINUTE_SECOND_REGISTER = 6,
     WEEK_HOUR_REGISTER = 7;
 
+var ENABLED_VALUE = 165,
+    DISABLED_VALUE = 90;
+
 
 function Thermostat(modbusMaster, modbusAddr, noWatch) {
     this._modbusMaster = modbusMaster;
@@ -30,7 +33,7 @@ function Thermostat(modbusMaster, modbusAddr, noWatch) {
     this.isWeeklyProgram = null;
 
     this._rawData = [];
-    this._oldData = [];
+    this._currentData = [];
 
     if (!noWatch)
         this.watch();
@@ -44,7 +47,7 @@ _.extend(Thermostat.prototype, {
         return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then(function (data) {
             th._rawData = data;
 
-            th.enabled = data[ENABLED_REGISTER] != 90;
+            th.enabled = data[ENABLED_REGISTER] != DISABLED_VALUE;
             th.fanSpeed = data[FAN_SPEED_REGISTER];
             th.mode = data[MODE_REGISTER];
             th.roomTemp = data[ROOM_TEMP_REGISTER] / 2;
@@ -63,8 +66,10 @@ _.extend(Thermostat.prototype, {
      * @param {boolean} value
      */
     setEnable: function(value) {
-        this.enabled = !!value;
-        return this._modbusMaster.writeSingleRegister(this._modbusAddr, 9, !value ? 90 : 165);
+        return this._modbusMaster.writeSingleRegister(this._modbusAddr, 9, !value ? DISABLED_VALUE : ENABLED_VALUE).then(function(){
+            this.enabled = !!value;
+            self._currentData[ENABLED_REGISTER] = !value ? DISABLED_VALUE : ENABLED_VALUE;
+        });
     },
 
     enable: function(){
@@ -76,24 +81,31 @@ _.extend(Thermostat.prototype, {
     },
 
     setTempSetpoint: function(temp) {
-        this.tempSetpoint = temp;
-        return this._modbusMaster.writeSingleRegister(this._modbusAddr, 13, temp * 2);
+        return this._modbusMaster.writeSingleRegister(this._modbusAddr, 13, temp * 2).then(function(){
+            this.tempSetpoint = temp;
+            self._currentData[TEMP_SETPOINT_REGISTER] = temp * 2;
+        });
     },
 
     watch: function () {
         var self = this;
 
         self.update().finally(function () {
-            if (!_.isEqual(self._oldData, self._rawData)) {
-                self.trigger('change', self);
-                self._oldData = self._rawData.slice(0); //clone data array
+            if (self._currentData.length = 0 && self._rawData.length != 0) {
+                self.trigger('ready', self);
             }
 
+            if (!_.isEqual(self._currentData, self._rawData)) {
+                self.trigger('change', self);
+            }
+
+            self._currentData = self._rawData.slice(0); //clone data array
             setTimeout(function () {
                 self.watch();
             }, 300)
-        }).catch(ModbusCrcError, TimeoutError, function(){
+        }).catch(ModbusCrcError, TimeoutError, function(err){
             //do nothing
+            console.log(err);
         });
     }
 })

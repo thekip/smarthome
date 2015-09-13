@@ -27,15 +27,15 @@ webpackJsonp([0],[
 
 	    $scope.toggleEnable = function(thermostat, $index) {
 	        thermostat.enabled = !thermostat.enabled;
-	        socket.emit('thermostat.setEnable', {
-	            thermostat: $index,
+	        socket.emit('gui.setRoomEnable', {
+	            id: $index,
 	            value: thermostat.enabled,
 	        })
 	    };
 
 	    function changeTemp(thermostat, $index) {
-	        socket.emit('thermostat.changeTemp', {
-	            thermostat: $index,
+	        socket.emit('gui.changeRoomTemp', {
+	            id: $index,
 	            setpoint: thermostat.tempSetpoint,
 	        })
 	    }

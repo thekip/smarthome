@@ -28,12 +28,12 @@ Adapter485.attach = function(serial, pin){
         return function() {
             var params = arguments;
             console.log('try to write');
-            gpio.write(pin, 0, function(err) {          // Set pin 16 high (1)
+            gpio.write(pin, 1, function(err) {          // Set pin 16 high (1)
                 console.log('pin setted to 1', err);
                 original.apply(serial, params);
 
                 serial.drain(function(){
-                    gpio.write(pin, 1, function(err){
+                    gpio.write(pin, 0, function(err){
                         console.log('pin setted to 0', err);
                     });
                 })

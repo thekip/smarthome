@@ -1,7 +1,7 @@
-//var _ = require('lodash');
+var _ = require('lodash');
 //var MicroEvent = require('microevent');
 
-module.exports = AnalogShield;
+module.exports = Dumper;
 
 var OUTPUT_1_10V_REGISTERS = [0, 1, 2, 3, 4];
 
@@ -27,7 +27,11 @@ _.extend(Dumper.prototype, {
     },
 
     close: function(){
-        return this._position == FULL_OPENED;
+        this.setPosition(100);
+    },
+
+    open: function(){
+        this.setPosition(0);
     },
 
     /**

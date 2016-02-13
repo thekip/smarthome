@@ -1,8 +1,10 @@
 var _ = require('lodash');
 var constants = require('./modbus-rtu/constants');
-constants.DEBUG = true;
+//constants.DEBUG = true;
 var devices = require('./controlLoop');
+var Promise =  require('bluebird');
 
+Promise.longStackTraces();
 var app = require('./server').app;
 var io = require('./server').io;
 
@@ -17,11 +19,12 @@ io.on('connection', function(socket){
     });
 
     socket.on('gui.changeRoomTemp', function(data){
-        devices.rooms[data.id].setTempSetpoint(data.setpoint).done();
+        devices.rooms[data.id].setTempSetpoint(data.setpoint);
     });
 
     socket.on('gui.setRoomEnable', function (data) {
-        devices.rooms[data.id].setEnable(data.value).done();
+        console.log('receive setRoomEnable event');
+        devices.rooms[data.id].setEnable(data.value);
     });
 });
 

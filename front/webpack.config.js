@@ -2,22 +2,23 @@ var webpack = require("webpack");
 var path = require('path');
 var _ = require('lodash');
 var nodeModulesDir = path.resolve(__dirname, 'node_modules');
-var IndexHtmlPlugin = require('indexhtml-webpack-plugin');
 
 function getNPMPackageIds() {
     // read package.json and get dependencies' package ids
-    var packageManifest = require(path.resolve('./package.json'));
+    var packageManifest = require(path.resolve(__dirname, 'package.json'));
     return _.keys(packageManifest.dependencies) || [];
 }
 
+
 module.exports = {
+    context: __dirname,
     entry: {
         //'index.html': './index.html',
         app: "./src/js/index",
         vendors: getNPMPackageIds()
     },
     output: {
-        path: "./public/js",
+        path: __dirname + "/public/js",
         publicPath: "/js/",
         filename: "app.js",
     },

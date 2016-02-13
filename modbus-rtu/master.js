@@ -53,33 +53,37 @@ Master.prototype.readHoldingRegisters = function (slave, start, length) {
  * @param slave
  * @param register
  * @param value
- * @param retry
+ * @param retryCount
  */
-Master.prototype.writeSingleRegister = function (slave, register, value, retry) {
+Master.prototype.writeSingleRegister = function (slave, register, value, retryCount) {
     var packet = this.createFixedPacket(slave, constants.FUNCTION_CODES.WRITE_SINGLE_REGISTER, register, value);
-
     var self = this;
+    retryCount = retryCount ? retryCount : constants.DEFAULT_RETRY_COUNT;
 
-    var performRequest = function(retry){
-        return new Promise(function(resolve, reject) {
+    var performRequest = function (retry) {
+        return new Promise(function (resolve) {
+            var funcName = 'writeSingleRegister: ';
+            var funcId  = ' Slave '+slave+'; ' +
+                'Register: '+register+'; Value: '+value+';  Retry ' + (retryCount + 1 - retry) + ' of ' + retryCount;
+
+            if (retry <= 0) {
+                throw new Error('Retry limit exceed (retry count  '+retryCount+') ' + funcId);
+            }
+
+            //constants.DEBUG &&
+            console.log(funcName + 'perform request.' + funcId);
+
             self.request(packet)
-                .catch(function () {
-                    if (retry > 0) {
-                        console.log('Error: retry ' + retry);
-                        performRequest(retry--).then(
-                            function (data) {
-                                resolve(data);
-                            }, function (err) {
-                                reject(err);
-                            });
-                    }
+                .catch(function (err) {
+                    constants.DEBUG &&  console.log(funcName + err  + funcId);
+
+                    return performRequest(--retry);
                 }).then(function (data) {
                     resolve(data);
                 });
         });
     };
-
-    return performRequest(retry ? retry : 3);
+    return performRequest(retryCount);
 };
 
 Master.prototype.writeMultipleRegisters = function(slave, start, array){

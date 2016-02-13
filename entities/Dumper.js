@@ -47,14 +47,5 @@ _.extend(Dumper.prototype, {
         (this._position / FULL_CLOSED) * 100
     },
 
-    /**
-     * Set value for 1-10 output port
-     * @param adr port address
-     * @param value 0-255
-     */
-    setAnalogOutput: function (adr, value) {
-        return this._modbusMaster.writeSingleRegister(this._modbusAddr, OUTPUT_1_10V_REGISTERS[adr], value);
-    },
-
 });
 

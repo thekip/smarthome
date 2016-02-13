@@ -5,17 +5,17 @@
         tempSetpoint: {{ acUnit.tempSetpoint }} $actualSetpoint: {{ acUnit.$actualSetpoint}} <br />
         $ambientTempAcUnit: {{acUnit.$ambientTempAcUnit}}  $ambientTemp: {{acUnit.ambientTemp}}
     </div>
-    <ul class="thermostats" >
-        <li class="thermostats__element" ng-repeat="thermostat in thermostats">
+    <ul class="rooms" >
+        <li class="rooms__element" ng-repeat="room in rooms">
             <span>Thermostat {{$index}}</span>
-            <span>Room temp: {{thermostat.roomTemp}}</span>
-            <span>Set temp: {{thermostat.tempSetpoint}}</span>
-            <span>Status: {{thermostat.enabled ? 'on' : 'off'}}</span>
+            <span>Room temp: {{room.ambientTemp}}</span>
+            <span>Set temp: {{room.tempSetpoint}}</span>
+            <span>Status: {{room.enabled ? 'on' : 'off'}}</span>
 
-            <button ng-click="incrementTemp(thermostat, $index)">+</button>
-            <button ng-click="decrementTemp(thermostat, $index)">-</button>
+            <button ng-click="incrementTemp(room, $index)">+</button>
+            <button ng-click="decrementTemp(room, $index)">-</button>
 
-            <button ng-click="toggleEnable(thermostat, $index)">toggle</button>
+            <button ng-click="toggleEnable(room, $index)">toggle</button>
         </li>
     </ul>
 </div>

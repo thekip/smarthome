@@ -1,6 +1,5 @@
 var _ = require('lodash');
 var MicroEvent  = require('microevent');
-var moment = require('moment');
 
 var ModbusCrcError = require('modbus-rtu/errors').crc;
 var TimeoutError = require('bluebird').TimeoutError;
@@ -66,8 +65,9 @@ _.extend(Thermostat.prototype, {
      * @param {boolean} value
      */
     setEnable: function(value) {
+        var self = this;
         return this._modbusMaster.writeSingleRegister(this._modbusAddr, 9, !value ? DISABLED_VALUE : ENABLED_VALUE).then(function(){
-            this.enabled = !!value;
+            self.enabled = !!value;
             self._currentData[ENABLED_REGISTER] = !value ? DISABLED_VALUE : ENABLED_VALUE;
         });
     },
@@ -81,8 +81,9 @@ _.extend(Thermostat.prototype, {
     },
 
     setTempSetpoint: function(temp) {
+        var self = this;
         return this._modbusMaster.writeSingleRegister(this._modbusAddr, 13, temp * 2).then(function(){
-            this.tempSetpoint = temp;
+            self.tempSetpoint = temp;
             self._currentData[TEMP_SETPOINT_REGISTER] = temp * 2;
         });
     },
@@ -90,8 +91,8 @@ _.extend(Thermostat.prototype, {
     watch: function () {
         var self = this;
 
-        self.update().finally(function () {
-            if (self._currentData.length = 0 && self._rawData.length != 0) {
+        self.update().then(function () {
+            if (self._currentData.length == 0 && self._rawData.length !== 0) {
                 self.trigger('ready', self);
             }
 
@@ -100,12 +101,12 @@ _.extend(Thermostat.prototype, {
             }
 
             self._currentData = self._rawData.slice(0); //clone data array
+        }).catch(ModbusCrcError, TimeoutError, function(err){
+            //do nothing
+        }).finally(function(){
             setTimeout(function () {
                 self.watch();
             }, 300)
-        }).catch(ModbusCrcError, TimeoutError, function(err){
-            //do nothing
-            console.log(err);
         });
     }
 })

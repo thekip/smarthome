@@ -18,27 +18,13 @@ function AnalogShield(modbusMaster, modbusAddr) {
 //MicroEvent.mixin(AnalogShield);
 
 _.extend(AnalogShield.prototype, {
-    update: function () {
-        var th = this;
-        return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then(function (data) {
-            th._rawData = data;
-
-            th.enabled = data[ENABLED_REGISTER] != 90;
-            th.fanSpeed = data[FAN_SPEED_REGISTER];
-            th.mode = data[MODE_REGISTER];
-            th.roomTemp = data[ROOM_TEMP_REGISTER] / 2;
-            th.tempSetpoint = data[TEMP_SETPOINT_REGISTER] / 2;
-            th.isWeeklyProgram = data[MANUAL_WEEKLY_PROG_REGISTER];
-        })
-    },
-
     /**
      * Set value for 1-10 output port
      * @param adr port address
      * @param value 0-255
      */
     setAnalogOutput: function (adr, value) {
-        return this._modbusMaster.writeSingleRegister(this._modbusAddr, OUTPUT_1_10V_REGISTERS[adr], value);
+        return this._modbusMaster.writeSingleRegister(this._modbusAddr, OUTPUT_1_10V_REGISTERS[adr], value, 100);
     },
 
 

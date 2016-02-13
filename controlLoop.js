@@ -1,4 +1,4 @@
-var _ = require('lodash');
+п»їvar _ = require('lodash');
 var modbus = require('./modbus-rtu');
 var SerialPort = require('serialport').SerialPort;
 
@@ -12,17 +12,16 @@ var config = require('./config');
 
 var devices = {
     ac: null,
-    //thermostats: null,
     rooms: null,
     aShield: null
-}
+};
 
 module.exports = devices;
 
 var serial = new SerialPort(config.serialPort.device, config.serialPort.params);
 var master = new modbus.Master(serial);
 
-devices.ac = new AcUnit(master, config.modbusDevices.acUnitAdress);
+devices.ac = new AcUnit(master, config.modbusDevices.acUnitAddress);
 devices.aShield = new AnalogShield(master, config.modbusDevices.analogShieldAddress);
 
 devices.rooms = _.map(config.rooms, function(roomConfig) {
@@ -38,40 +37,28 @@ devices.rooms = _.map(config.rooms, function(roomConfig) {
     return room;
 });
 
-//devices.thermostats = _.map(config.modbusDevices.termostatsAdresses, function(slave, i) {
-//    var t = new Thermostat(master, slave, true);
-//
-//    t.bind('change', function(){
-//        console.log('Thermostat '+ i + '. '+ t.toString());
-//        onRoomUpdate();
-//    });
-//
-//    return t;
-//});
-
 function onRoomUpdate() {
-
-    //находим включенные комнаты
+    //РЅР°С…РѕРґРёРј РІРєР»СЋС‡РµРЅРЅС‹Рµ РєРѕРјРЅР°С‚С‹
     var enabledRooms = _.filter(devices.rooms, {enabled: true});
 
-    //если есть включенные комнаты, включаем кондей, иначе выключаем
+    //РµСЃР»Рё РµСЃС‚СЊ РІРєР»СЋС‡РµРЅРЅС‹Рµ РєРѕРјРЅР°С‚С‹, РІРєР»СЋС‡Р°РµРј РєРѕРЅРґРµР№, РёРЅР°С‡Рµ РІС‹РєР»СЋС‡Р°РµРј
     devices.ac.setEnabled(enabledRooms.length !== 0);
 
     if (enabledRooms.length !== 0) {
-        //задаем кондею setpoint по самому нижнему значению из термостатов (для режима обогрев по самому верхнему))
+        //Р·Р°РґР°РµРј РєРѕРЅРґРµСЋ setpoint РїРѕ СЃР°РјРѕРјСѓ РЅРёР¶РЅРµРјСѓ Р·РЅР°С‡РµРЅРёСЋ РёР· С‚РµСЂРјРѕСЃС‚Р°С‚РѕРІ (РґР»СЏ СЂРµР¶РёРјР° РѕР±РѕРіСЂРµРІ РїРѕ СЃР°РјРѕРјСѓ РІРµСЂС…РЅРµРјСѓ))
         devices.ac.setTempSetpoint(Math.ceil(_.min(enabledRooms, 'tempSetpoint').tempSetpoint));
 
-        //задаем в кондей температуру в комнате по самому верхнему значению из термостатов (для режима обогрев по самому нижнему)
-        //Округление для охлаждения производим в нижнюю сторону, а для обгрева в верхнюю сторону
+        //Р·Р°РґР°РµРј РІ РєРѕРЅРґРµР№ С‚РµРјРїРµСЂР°С‚СѓСЂСѓ РІ РєРѕРјРЅР°С‚Рµ РїРѕ СЃР°РјРѕРјСѓ РІРµСЂС…РЅРµРјСѓ Р·РЅР°С‡РµРЅРёСЋ РёР· С‚РµСЂРјРѕСЃС‚Р°С‚РѕРІ (РґР»СЏ СЂРµР¶РёРјР° РѕР±РѕРіСЂРµРІ РїРѕ СЃР°РјРѕРјСѓ РЅРёР¶РЅРµРјСѓ)
+        //РћРєСЂСѓРіР»РµРЅРёРµ РґР»СЏ РѕС…Р»Р°Р¶РґРµРЅРёСЏ РїСЂРѕРёР·РІРѕРґРёРј РІ РЅРёР¶РЅСЋСЋ СЃС‚РѕСЂРѕРЅСѓ, Р° РґР»СЏ РѕР±РіСЂРµРІР° РІ РІРµСЂС…РЅСЋСЋ СЃС‚РѕСЂРѕРЅСѓ
         devices.ac.setAmbientTemp(Math.floor(_.max(enabledRooms, 'ambientTemp').ambientTemp));
     } else {
-        //если термостаты отключены, то сбрасываем на стандартные настройки кондиционера, что бы можно было управлять с его пульта.
+        //РµСЃР»Рё С‚РµСЂРјРѕСЃС‚Р°С‚С‹ РѕС‚РєР»СЋС‡РµРЅС‹, С‚Рѕ СЃР±СЂР°СЃС‹РІР°РµРј РЅР° СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ РЅР°СЃС‚СЂРѕР№РєРё РєРѕРЅРґРёС†РёРѕРЅРµСЂР°, С‡С‚Рѕ Р±С‹ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ СѓРїСЂР°РІР»СЏС‚СЊ СЃ РµРіРѕ РїСѓР»СЊС‚Р°.
         devices.ac.resetControls();
     }
 
-    //devices.ac.update().done(function(){
-    //   // console.log('AC Unit. '+ devices.ac.toString());
-    //}, function(err){
-    //    console.log(err);
-    //})
+    devices.ac.update().done(function(){
+       // console.log('AC Unit. '+ devices.ac.toString());
+    }, function(err){
+        console.log(err);
+    })
 }

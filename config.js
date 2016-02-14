@@ -18,10 +18,9 @@ module.exports = {
         }
     ],
     serialPort: {
-        device: '/dev/ttyUSB0', //"/dev/ttyUSB0"
+        device: '/dev/ttyUSB0',
             params: {
             baudrate: 2400 //2400
         }
     }
-
-}
+};

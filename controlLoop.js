@@ -1,16 +1,18 @@
-﻿var _ = require('lodash');
-var modbus = require('./modbus-rtu');
-var SerialPort = require('serialport').SerialPort;
+﻿'use strict';
 
-var AcUnit = require('./entities/AcUnit');
-var Thermostat = require('./entities/Thermostat');
-var Dumper = require('./entities/Dumper');
-var AnalogShield = require('./entities/AnalogShield');
-var Room = require('./entities/Room');
+const _ = require('lodash');
+const modbus = require('./modbus-rtu');
+const SerialPort = require('serialport').SerialPort;
 
-var config = require('./config');
+const AcUnit = require('./entities/AcUnit');
+const Thermostat = require('./entities/Thermostat');
+const Dumper = require('./entities/Dumper');
+const AnalogShield = require('./entities/AnalogShield');
+const Room = require('./entities/Room');
 
-var devices = {
+const config = require('./config');
+
+const devices = {
     ac: null,
     rooms: null,
     aShield: null
@@ -18,13 +20,13 @@ var devices = {
 
 module.exports = devices;
 
-var serial = new SerialPort(config.serialPort.device, config.serialPort.params);
-var master = new modbus.Master(serial);
+const serial = new SerialPort(config.serialPort.device, config.serialPort.params);
+const master = new modbus.Master(serial);
 
 devices.ac = new AcUnit(master, config.modbusDevices.acUnitAddress);
 devices.aShield = new AnalogShield(master, config.modbusDevices.analogShieldAddress);
 
-devices.rooms = _.map(config.rooms, function(roomConfig) {
+devices.rooms = _.map(config.rooms, (roomConfig) => {
     var thermostat = new Thermostat(master, roomConfig.thermostatAddress);
     var dumper = new Dumper(roomConfig.dumperPort, devices.aShield);
 
@@ -56,9 +58,9 @@ function onRoomUpdate() {
         devices.ac.resetControls();
     }
 
-    devices.ac.update().done(function(){
+    devices.ac.update().done(() => {
        // console.log('AC Unit. '+ devices.ac.toString());
-    }, function(err){
+    }, (err) => {
         console.log(err);
     })
 }

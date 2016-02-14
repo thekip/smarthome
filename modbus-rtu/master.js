@@ -70,7 +70,7 @@ Master.prototype.writeSingleRegister = function (slave, register, value, retryCo
                 throw new Error('Retry limit exceed (retry count  '+retryCount+') ' + funcId);
             }
 
-            //constants.DEBUG &&
+            constants.DEBUG &&
             console.log(funcName + 'perform request.' + funcId);
 
             self.request(packet)

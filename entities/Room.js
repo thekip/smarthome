@@ -1,11 +1,17 @@
 'use strict';
 
 const _ = require('lodash');
-const MicroEvent = require('microevent');
+const SimpleEvent = require('../libs/simple-event');
 
 let id = 0;
 
 class Room {
+  /**
+   *
+   * @param {Thermostat} thermostat
+   * @param {Dumper} dumper
+   * @param {AcUnit} ac
+     */
   constructor(thermostat, dumper, ac) {
     this._thermostat = thermostat;
     this._dumper = dumper;
@@ -15,7 +21,13 @@ class Room {
     this.ambientTemp = null;
     this.tempSetpoint = null;
 
-    thermostat.bind('change', () => {
+    /**
+     *
+     * @type {SimpleEvent}
+     */
+    this.onChange = new SimpleEvent();
+
+    thermostat.onChange.bind(() => {
       this.onThermostatChange();
     });
   }
@@ -27,7 +39,7 @@ class Room {
 
     console.log("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
 
-    this.trigger('change');
+    this.onChange.trigger();
     this._updateDumperPosition();
   }
 
@@ -49,17 +61,14 @@ class Room {
   setEnable(value) {
     this.enabled = !!value;
     this._thermostat.setEnable(value);
-    this.trigger('change');
     this._updateDumperPosition();
   }
 
   setTempSetpoint(temp) {
     this.tempSetpoint = temp;
     this._thermostat.setTempSetpoint(temp);
-    this.trigger('change');
     this._updateDumperPosition();
   }
 }
 
-MicroEvent.mixin(Room);
 module.exports = Room;

@@ -32,8 +32,8 @@ devices.rooms = _.map(config.rooms, (roomConfig) => {
 
     var room = new Room(thermostat, dumper, devices.ac);
 
-    room.bind('change', function(){
-        onRoomUpdate();
+    room.onChange.bind(() => {
+      onRoomUpdate();
     });
 
     return room;

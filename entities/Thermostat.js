@@ -1,7 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
-const MicroEvent = require('microevent');
+const SimpleEvent = require('../libs/simple-event');
 
 const ModbusCrcError = require('modbus-rtu/errors').crc;
 const TimeoutError = require('bluebird').TimeoutError;
@@ -20,6 +20,12 @@ const ENABLED_VALUE = 165,
   DISABLED_VALUE = 90;
 
 class Thermostat {
+  /**
+   *
+   * @param {Master} modbusMaster
+   * @param {Number} modbusAddr
+   * @param {boolean} noWatch
+     */
   constructor(modbusMaster, modbusAddr, noWatch) {
     this._modbusMaster = modbusMaster;
     this._modbusAddr = modbusAddr;
@@ -31,23 +37,35 @@ class Thermostat {
     this.tempSetpoint = null;
     this.isWeeklyProgram = null;
 
-    this._rawData = [];
     this._currentData = [];
 
-    if (!noWatch)
-      this.watch();
+    /**
+     *
+     * @type {SimpleEvent}
+     */
+    this.onChange = new SimpleEvent();
+
+    noWatch ? this.update() :  this.watch();
   }
 
   update() {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then((data) => {
-      this._rawData = data;
-
       this.enabled = data[ENABLED_REGISTER] != DISABLED_VALUE;
       this.fanSpeed = data[FAN_SPEED_REGISTER];
       this.mode = data[MODE_REGISTER];
       this.roomTemp = data[ROOM_TEMP_REGISTER] / 2;
       this.tempSetpoint = data[TEMP_SETPOINT_REGISTER] / 2;
       this.isWeeklyProgram = data[MANUAL_WEEKLY_PROG_REGISTER];
+
+      if (this._currentData.length == 0 && data.length !== 0) {
+        // filled first time
+        this.onChange.trigger();
+      }
+
+      this._currentData = data.slice(0); //clone data array
+
+      return data;
+    }).catch(ModbusCrcError, TimeoutError, (err) => {
     })
   }
 
@@ -83,18 +101,11 @@ class Thermostat {
   }
 
   watch() {
-    this.update().then(() => {
-      if (this._currentData.length == 0 && this._rawData.length !== 0) {
-        this.trigger('ready', this);
+    this.update().then((rawData) => {
+      if (rawData && !_.isEqual(this._currentData, rawData)) {
+        // check, whether data is changed or not
+        this.onChange.trigger();
       }
-
-      if (!_.isEqual(this._currentData, this._rawData)) {
-        this.trigger('change', this);
-      }
-
-      this._currentData = this._rawData.slice(0); //clone data array
-    }).catch(ModbusCrcError, TimeoutError, (err) => {
-      //do nothing
     }).finally(() => {
       setTimeout(() => {
         this.watch();
@@ -103,5 +114,4 @@ class Thermostat {
   }
 }
 
-MicroEvent.mixin(Thermostat);
 module.exports = Thermostat;

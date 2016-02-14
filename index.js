@@ -13,16 +13,17 @@ io.on('connection', function(socket){
 
     socket.emit('data', {
         acUnit: prepareDto(devices.ac),
-        rooms: _.map(devices.rooms, function (room) {
+        zones: _.map(devices.rooms, function (room) {
             return prepareDto(room);
         })
     });
 
-    socket.on('gui.changeRoomTemp', function(data){
+    socket.on('gui.setZoneSetpoint', function(data){
+        console.log('receive setPoint event', data);
         devices.rooms[data.id].setTempSetpoint(data.setpoint);
     });
 
-    socket.on('gui.setRoomEnable', function (data) {
+    socket.on('gui.setZoneEnable', function (data) {
         console.log('receive setRoomEnable event');
         devices.rooms[data.id].setEnable(data.value);
     });
@@ -30,15 +31,19 @@ io.on('connection', function(socket){
 
 _.forEach(devices.rooms, function (room, i) {
     room.bind('change', function () {
-        io.emit('room.change', {
-            index: i,
+        io.emit('zoneChanged', {
             data: prepareDto(room)
         })
     });
 });
 
-function prepareDto(obj){
-    return _.omit(obj, function(value, key){
-        return key.indexOf("_") === 0;
-    })
+function prepareDto(obj) {
+    const dto = {};
+    _.each(obj, function(value, key) {
+        if (!_.startsWith(key, '_')) {
+            dto[key] = value;
+        }
+    });
+
+    return dto;
 }

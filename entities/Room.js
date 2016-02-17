@@ -39,7 +39,9 @@ class Room {
 
     console.log("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
 
-    this.onChange.trigger();
+    this.onChange.trigger({
+      emitter: 'thermostat'
+    });
     this._updateDumperPosition();
   }
 
@@ -61,12 +63,22 @@ class Room {
   setEnable(value) {
     this.enabled = !!value;
     this._thermostat.setEnable(value);
+
+    this.onChange.trigger({
+      emitter: 'program'
+    });
+
     this._updateDumperPosition();
   }
 
   setTempSetpoint(temp) {
     this.tempSetpoint = temp;
     this._thermostat.setTempSetpoint(temp);
+
+    this.onChange.trigger({
+      emitter: 'program'
+    });
+
     this._updateDumperPosition();
   }
 }

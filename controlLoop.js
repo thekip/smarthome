@@ -20,14 +20,17 @@ const devices = {
 
 module.exports = devices;
 
-const serial = new SerialPort(config.serialPort.device, config.serialPort.params);
-const master = new modbus.Master(serial);
+// My system splitted to 2 buses.
+// One bus is high-speed for acUnit, Analog Shield, and other devices wich support high speed communication
+// and second bus especially for thermostats. Because they didn't support speed higher than 2400.
+const highSpeedBus = new modbus.Master(new SerialPort(config.bus1.device, config.bus1.params));
+const lowSpeedBus = new modbus.Master(new SerialPort(config.bus2.device, config.bus2.params));
 
-devices.ac = new AcUnit(master, config.modbusDevices.acUnitAddress);
-devices.aShield = new AnalogShield(master, config.modbusDevices.analogShieldAddress);
+devices.ac = new AcUnit(highSpeedBus, config.modbusDevices.acUnitAddress);
+devices.aShield = new AnalogShield(highSpeedBus, config.modbusDevices.analogShieldAddress);
 
 devices.rooms = _.map(config.rooms, (roomConfig) => {
-    var thermostat = new Thermostat(master, roomConfig.thermostatAddress);
+    var thermostat = new Thermostat(lowSpeedBus, roomConfig.thermostatAddress);
     var dumper = new Dumper(roomConfig.dumperPort, devices.aShield);
 
     var room = new Room(thermostat, dumper, devices.ac);

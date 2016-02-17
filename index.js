@@ -3,6 +3,7 @@
 const _ = require('lodash');
 const constants = require('./modbus-rtu/constants');
 //constants.DEBUG = true;
+
 const devices = require('./controlLoop');
 const Promise = require('bluebird');
 
@@ -22,19 +23,29 @@ io.on('connection', (socket) => {
   socket.on('gui.setZoneSetpoint', (data) => {
     console.log('receive setPoint event', data);
     devices.rooms[data.id].setTempSetpoint(data.setpoint);
+
+    socket.broadcast.emit('zoneChanged', {
+      data: prepareDto(devices.rooms[data.id])
+    })
   });
 
   socket.on('gui.setZoneEnable', (data) => {
     console.log('receive setRoomEnable event');
     devices.rooms[data.id].setEnable(data.value);
+
+    socket.broadcast.emit('zoneChanged', {
+      data: prepareDto(devices.rooms[data.id])
+    })
   });
 });
 
 _.forEach(devices.rooms, (room, i) => {
-  room.onChange.bind(() => {
-    io.emit('zoneChanged', {
-      data: prepareDto(room)
-    })
+  room.onChange.bind((event) => {
+    if (event.emitter == 'thermostat') { // avoid echo effect, reflect only when event emitted by thermostat
+      io.emit('zoneChanged', {
+        data: prepareDto(room)
+      })
+    }
   });
 });
 

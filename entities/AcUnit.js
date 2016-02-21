@@ -1,5 +1,7 @@
 'use strict';
 
+const SimpleEvent = require('../libs/simple-event');
+
 //registers
 const ENABLED_REGISTER = 0,
     UNIT_MODE_REGISTER = 1,
@@ -32,7 +34,9 @@ class AcUnit {
       DRY: 2,
       FAN: 3,
       COOL: 4
-    }
+    };
+
+    this.onChange = new SimpleEvent();
   }
 
   update() {
@@ -48,8 +52,10 @@ class AcUnit {
     })
   }
 
+
   setTempSetpoint(setpoint) {
-    return this._modbusMaster.writeSingleRegister(this._modbusAddr, TEMP_SETPOINT_REGISTER, setpoint)
+    this.tempSetpoint = setpoint;
+    return this._write(TEMP_SETPOINT_REGISTER, setpoint);
   }
 
   resetControls() {
@@ -57,15 +63,17 @@ class AcUnit {
   }
 
   setAmbientTemp(temp) {
-    return this._modbusMaster.writeSingleRegister(this._modbusAddr, AMBIENT_TEMP_EXTERNAL_REGISTER, temp)
+    this.ambientTemp = temp;
+    return this._write(AMBIENT_TEMP_EXTERNAL_REGISTER, temp);
   }
 
-  setDefaultAmbientTemp(temp) {
-    return this._modbusMaster.writeSingleRegister(this._modbusAddr, AMBIENT_TEMP_EXTERNAL_REGISTER, AMBIENT_TEMP_DEFAULT)
+  setDefaultAmbientTemp() {
+    return this.setAmbientTemp(AMBIENT_TEMP_DEFAULT);
   }
 
   setEnabled(value) {
-    return this._modbusMaster.writeSingleRegister(this._modbusAddr, ENABLED_REGISTER, + value)
+    this.enabled = value;
+    return this._write(ENABLED_REGISTER, + value);
   }
 
   toString() {
@@ -74,16 +82,9 @@ class AcUnit {
       'Real AC ambient temp: ' + this.$ambientTempAcUnit + 'C; Real AC setpoint: ' + this.$actualSetpoint + 'C;'
   }
 
-  enable() {
-    return this.setEnabled(1).then(() => {
-      return this.update();
-    });
-  }
-
-  disable() {
-    return this.setEnabled(0).then(() => {
-      return this.update();
-    });
+  _write(reg, value) {
+    this.onChange.trigger();
+    return this._modbusMaster.writeSingleRegister(this._modbusAddr, reg, value);
   }
 }
 

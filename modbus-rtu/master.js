@@ -10,15 +10,18 @@ var errors = require('./errors');
 
 module.exports = Master;
 
-function Master(serialPort, onReady) {
-    var self = this;
-    serialPort.on('error', function(err){
+function Master(serialPort, options) {
+    serialPort.on('error', function(err) {
         console.error(err);
-    })
-    this.serial = new SerialHelper(serialPort, function(){
-        if (onReady)
-            onReady(self);
     });
+
+    this._options =  _.defaults(options || {}, {
+      responseTimeout: constants.RESPONSE_TIMEOUT,
+      queueTimeout: constants.QUEUE_TIMEOUT,
+      endPacketTimeout: constants.END_PACKET_TIMEOUT,
+    });
+
+    this.serial = new SerialHelper(serialPort, this._options);
 }
 
 /**
@@ -42,11 +45,11 @@ Master.prototype.readHoldingRegisters = function (slave, start, length) {
                         results.push(val.value.readInt16BE(i));
                     }
                 });
-            })
+            });
 
             return results;
         });
-}
+};
 
 /**
  *
@@ -70,12 +73,12 @@ Master.prototype.writeSingleRegister = function (slave, register, value, retryCo
                 throw new Error('Retry limit exceed (retry count  '+retryCount+') ' + funcId);
             }
 
-            constants.DEBUG &&
+            self._options.debug &&
             console.log(funcName + 'perform request.' + funcId);
 
             self.request(packet)
                 .catch(function (err) {
-                    constants.DEBUG &&  console.log(funcName + err  + funcId);
+                    self._options.debug && console.log(funcName + err  + funcId);
 
                     return performRequest(--retry);
                 }).then(function (data) {

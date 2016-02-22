@@ -13,19 +13,19 @@ class Room {
    * @param {AcUnit} ac
      */
   constructor(thermostat, dumper, ac) {
-    this._thermostat = thermostat;
-    this._dumper = dumper;
-    this._ac = ac;
-    this.id = id++;
-    this.enabled = false;
-    this.ambientTemp = null;
-    this.tempSetpoint = null;
-
     /**
      *
      * @type {SimpleEvent}
      */
     this.onChange = new SimpleEvent();
+
+    this._thermostat = thermostat;
+    this._dumper = dumper;
+    this._ac = ac;
+    this.id = id++;
+    this.ambientTemp = null;
+    this._tempSetpoint = null;
+    this.sync = null;
 
     thermostat.onChange.bind(() => {
       this.onThermostatChange();
@@ -33,9 +33,9 @@ class Room {
   }
 
   onThermostatChange() {
-    this.enabled = this._thermostat.enabled;
+    this._enabled = this._thermostat.enabled;
     this.ambientTemp = this._thermostat.roomTemp;
-    this.tempSetpoint = this._thermostat.tempSetpoint;
+    this._tempSetpoint = this._thermostat.tempSetpoint;
 
     console.log("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
 
@@ -60,8 +60,16 @@ class Room {
     this._dumper[position]()
   }
 
-  setEnable(value) {
-    this.enabled = !!value;
+  get enabled() {
+    return this._enabled;
+  }
+
+  set enabled(value) {
+    if (this._enabled === value) {
+      return;
+    }
+
+    this._enabled = !!value;
     this._thermostat.setEnable(value);
 
     this.onChange.trigger({
@@ -71,8 +79,16 @@ class Room {
     this._updateDumperPosition();
   }
 
-  setTempSetpoint(temp) {
-    this.tempSetpoint = temp;
+  get tempSetpoint() {
+    return this._tempSetpoint;
+  }
+
+  set tempSetpoint(temp) {
+    if (this._tempSetpoint === temp) {
+      return;
+    }
+
+    this._tempSetpoint = temp;
     this._thermostat.setTempSetpoint(temp);
 
     this.onChange.trigger({
@@ -80,6 +96,16 @@ class Room {
     });
 
     this._updateDumperPosition();
+  }
+
+  getDto() {
+    const dto = {};
+
+    _.each(['tempSetpoint', 'enabled', 'ambientTemp', 'sync', 'id'], (prop) => {
+      dto[prop] = this[prop];
+    });
+
+    return dto;
   }
 }
 

@@ -1,6 +1,8 @@
 'use strict';
 
 const SimpleEvent = require('../libs/simple-event');
+const ModbusCrcError = require('../modbus-rtu/errors').crc;
+const TimeoutError = require('bluebird').TimeoutError;
 
 //registers
 const ENABLED_REGISTER = 0,
@@ -49,11 +51,16 @@ class AcUnit {
 
       this.$actualSetpoint = data[AC_ACTUAL_SETPOINT_TEMP];
       this.$ambientTempAcUnit = data[AMBIENT_TEMP_AC_UNIT_REGISTER]
+    }).catch(ModbusCrcError, TimeoutError, (err) => {
+      //do nothing
     })
   }
 
 
   setTempSetpoint(setpoint) {
+    if (setpoint == setpoint) {
+      return;
+    }
     this.tempSetpoint = setpoint;
     return this._write(TEMP_SETPOINT_REGISTER, setpoint);
   }
@@ -63,6 +70,9 @@ class AcUnit {
   }
 
   setAmbientTemp(temp) {
+    if (this.ambientTemp == temp) {
+      return;
+    }
     this.ambientTemp = temp;
     return this._write(AMBIENT_TEMP_EXTERNAL_REGISTER, temp);
   }
@@ -72,7 +82,11 @@ class AcUnit {
   }
 
   setEnabled(value) {
+    if (this.enabled == value) {
+      return;
+    }
     this.enabled = value;
+    console.log('Enable AC Unit: ', value);
     return this._write(ENABLED_REGISTER, + value);
   }
 
@@ -85,6 +99,21 @@ class AcUnit {
   _write(reg, value) {
     this.onChange.trigger();
     return this._modbusMaster.writeSingleRegister(this._modbusAddr, reg, value);
+  }
+
+  watch() {
+    this.update().then((rawData) => {
+      //if (rawData && !_.isEqual(this._currentData, rawData)) {
+      //  // check, whether data is changed or not
+      //  this.onChange.trigger();
+      //}
+    }).catch((err) => {
+      console.log('ac error', err);
+    }).finally(() => {
+      setTimeout(() => {
+        this.watch();
+      }, 300)
+    });
   }
 }
 

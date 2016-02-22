@@ -23,7 +23,7 @@ module.exports = devices;
 // My system splitted to 2 buses.
 // One bus is high-speed for acUnit, Analog Shield, and other devices wich support high speed communication
 // and second bus especially for thermostats. Because they didn't support speed higher than 2400.
-const highSpeedBus = new modbus.Master(new SerialPort(config.bus1.device, config.bus1.params));
+const highSpeedBus = new modbus.Master(new SerialPort(config.bus1.device, config.bus1.params), {endPacketTimeout: 50});
 const lowSpeedBus = new modbus.Master(new SerialPort(config.bus2.device, config.bus2.params));
 
 devices.ac = new AcUnit(highSpeedBus, config.modbusDevices.acUnitAddress);
@@ -61,9 +61,5 @@ function onRoomUpdate() {
         devices.ac.resetControls();
     }
 
-    devices.ac.update().done(() => {
-       // console.log('AC Unit. '+ devices.ac.toString());
-    }, (err) => {
-        console.log(err);
-    })
+    devices.ac.update().done();
 }

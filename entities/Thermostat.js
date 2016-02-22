@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const SimpleEvent = require('../libs/simple-event');
 
-const ModbusCrcError = require('modbus-rtu/errors').crc;
+const ModbusCrcError = require('../modbus-rtu/errors').crc;
 const TimeoutError = require('bluebird').TimeoutError;
 
 const ENABLED_REGISTER = 0,
@@ -63,9 +63,9 @@ class Thermostat {
       }
 
       this._currentData = data.slice(0); //clone data array
-
       return data;
     }).catch(ModbusCrcError, TimeoutError, (err) => {
+      //do nothing
     })
   }
 

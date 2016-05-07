@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 const SimpleEvent = require('../libs/simple-event');
+const DeviceConnection = require('../libs/device-connection');
 
 const ModbusCrcError = require('../modbus-rtu/errors').crc;
 const TimeoutError = require('bluebird').TimeoutError;
@@ -45,11 +46,15 @@ class Thermostat {
      */
     this.onChange = new SimpleEvent();
 
+    this.connection  = new DeviceConnection();
+
     noWatch ? this.update() :  this.watch();
   }
 
   update() {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then((data) => {
+      this.connection.success();
+
       this.enabled = data[ENABLED_REGISTER] != DISABLED_VALUE;
       this.fanSpeed = data[FAN_SPEED_REGISTER];
       this.mode = data[MODE_REGISTER];
@@ -63,9 +68,15 @@ class Thermostat {
       }
 
       this._currentData = data.slice(0); //clone data array
+
+
       return data;
     }).catch(ModbusCrcError, TimeoutError, (err) => {
-      //do nothing
+      this.connection.error();
+
+      if (!this.connection.online) {
+        console.error('Lost connection to thermostat ' + this._modbusAddr, err);
+      }
     })
   }
 

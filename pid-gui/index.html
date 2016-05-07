@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/socket.io/socket.io.js"></script>
+    <title></title>
+
+    <script type="text/javascript" src="http://smoothiecharts.org/smoothie.js"></script>
+</head>
+<body>
+<div id="chart_div"></div>
+<canvas id="mycanvas" width="1000" height="300"></canvas>
+
+<div style="overflow: hidden">
+    <div style="float:left">
+        Setpoint: <span id="setpointVal"></span>
+        Kp: <span id="KpVal"></span>
+        Ki: <span id="KiVal"></span>
+        Kd: <span id="KdVal"></span>
+    </div>
+
+    <div style="float: right">
+        PidInput: <span id="pidIn"></span>
+        PidOutput: <span id="pidOut"></span>
+    </div>
+</div>
+
+<form onsubmit="setTunings(); return false;">
+    <input id="setpoint" placeholder="setpoint"/>
+    <input id="kp" placeholder="kp"/>
+    <input id="ki" placeholder="ki"/>
+    <input id="kd" placeholder="kd"/>
+
+    <button type="submit">Set</button>
+</form>
+
+
+<script>
+    var socket = io();
+
+    var smoothie = new SmoothieChart({millisPerPixel:70, maxValue:1024,minValue:-100});
+    smoothie.streamTo(document.getElementById("mycanvas"), 1000);
+
+    var pidSetpointLine = new TimeSeries();
+    var pidInputLine = new TimeSeries();
+    var pidOutputLine = new TimeSeries();
+
+    smoothie.addTimeSeries(pidSetpointLine, {strokeStyle:'rgb(51, 102, 204)', lineWidth:3});
+    smoothie.addTimeSeries(pidInputLine, {strokeStyle:'rgb(220, 57, 18)', lineWidth:3});
+    smoothie.addTimeSeries(pidOutputLine, {strokeStyle:'rgb(255, 153, 0)', lineWidth:3});
+
+    socket.on('data', function (data) {
+        var pidSetpoint = data.regs[3];
+        var pidInput = data.regs[5];
+        var pidOutput = data.regs[11];
+
+        document.getElementById('setpointVal').textContent = data.regs[3];
+        document.getElementById('KpVal').textContent = data.regs[6];
+        document.getElementById('KiVal').textContent = data.regs[7];
+        document.getElementById('KdVal').textContent = data.regs[8];
+
+        document.getElementById('pidIn').textContent = pidInput;
+        document.getElementById('pidOut').textContent = pidOutput;
+
+        pidSetpointLine.append(new Date().getTime(), pidSetpoint);
+        pidInputLine.append(new Date().getTime(), pidInput);
+        pidOutputLine.append(new Date().getTime(), pidOutput);
+
+    });
+
+    function setTunings() {
+        var data = {
+            setpoint:  document.getElementById('setpoint').value,
+            kp:  document.getElementById('kp').value,
+            ki:  document.getElementById('ki').value,
+            kd:  document.getElementById('kd').value,
+        };
+        socket.emit('gui.changePid', data);
+    }
+
+</script>
+
+</body>
+</html>

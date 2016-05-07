@@ -18,13 +18,13 @@ module.exports = {
     }
   ],
   bus1: {
-    device: '/dev/ttyUSB0',
+    device: '/dev/ttyUSB1',
     params: {
       baudrate: 9600
     }
   },
   bus2: {
-    device: '/dev/ttyUSB1',
+    device: '/dev/ttyUSB0',
     params: {
       baudrate: 2400 //2400
     }

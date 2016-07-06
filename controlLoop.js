@@ -42,6 +42,11 @@ devices.rooms = _.map(config.rooms, (roomConfig) => {
     return room;
 });
 
+devices.ac.update().then(() => {
+  // just for debug purposes, log AC status
+  console.log(devices.ac.toString());
+});
+
 function onRoomUpdate() {
     //находим включенные комнаты
     var enabledRooms = _.filter(devices.rooms, {enabled: true});

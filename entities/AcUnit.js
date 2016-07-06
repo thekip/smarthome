@@ -56,9 +56,8 @@ class AcUnit {
     })
   }
 
-
   setTempSetpoint(setpoint) {
-    if (setpoint == setpoint) {
+    if (this.tempSetpoint == setpoint) {
       return;
     }
     this.tempSetpoint = setpoint;
@@ -92,7 +91,7 @@ class AcUnit {
 
   toString() {
     return 'Status: ' + (this.enabled ? 'on' : 'off ') +
-      '; Set room temp: ' + this.ambientTemp + 'C; Set setpoint: ' + this.tempSetpoint + 'C; \n\r' +
+      '; Ambient temp: ' + this.ambientTemp + 'C; Setpoint: ' + this.tempSetpoint + 'C; \n\r' +
       'Real AC ambient temp: ' + this.$ambientTempAcUnit + 'C; Real AC setpoint: ' + this.$actualSetpoint + 'C;'
   }
 

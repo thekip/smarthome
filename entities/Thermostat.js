@@ -48,12 +48,24 @@ class Thermostat {
 
     this.connection  = new DeviceConnection();
 
+    this.connection.onConnectionLost.bind((err)=> {
+      console.error('Lost connection to thermostat ' + this._modbusAddr, err);
+    });
+
+    this.connection.onConnectionRestore.bind(()=> {
+      console.error('Connection restored. Thermostat ' + this._modbusAddr);
+    });
+
     noWatch ? this.update() :  this.watch();
   }
 
   update() {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then((data) => {
       this.connection.success();
+
+      if (this._modbusAddr == 10) {
+        console.log('Thermostat', this._modbusAddr, data[ROOM_TEMP_REGISTER] / 2);
+      }
 
       this.enabled = data[ENABLED_REGISTER] != DISABLED_VALUE;
       this.fanSpeed = data[FAN_SPEED_REGISTER];
@@ -64,11 +76,7 @@ class Thermostat {
 
       return data;
     }).catch(ModbusCrcError, TimeoutError, (err) => {
-      this.connection.error();
-
-      if (!this.connection.online) {
-        console.error('Lost connection to thermostat ' + this._modbusAddr, err);
-      }
+      this.connection.error(err);
     })
   }
 

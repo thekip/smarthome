@@ -23,8 +23,6 @@ class Room {
     this._dumper = dumper;
     this._ac = ac;
     this.id = id++;
-    this.ambientTemp = null;
-    this._tempSetpoint = null;
     this.sync = null;
 
     thermostat.onChange.bind(() => {
@@ -34,7 +32,6 @@ class Room {
 
   onThermostatChange() {
     this._enabled = this._thermostat.enabled;
-    this.ambientTemp = this._thermostat.roomTemp;
     this._tempSetpoint = this._thermostat.tempSetpoint;
 
     console.log("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
@@ -79,16 +76,19 @@ class Room {
     this._updateDumperPosition();
   }
 
+  get ambientTemp() {
+    return this._thermostat.roomTemp;
+  }
+
   get tempSetpoint() {
-    return this._tempSetpoint;
+    return this._thermostat.tempSetpoint;
   }
 
   set tempSetpoint(temp) {
-    if (this._tempSetpoint === temp) {
+    if (this.tempSetpoint === temp) {
       return;
     }
 
-    this._tempSetpoint = temp;
     this._thermostat.setTempSetpoint(temp);
 
     this.onChange.trigger({

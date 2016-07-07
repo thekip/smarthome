@@ -62,14 +62,6 @@ class Thermostat {
       this.tempSetpoint = data[TEMP_SETPOINT_REGISTER] / 2;
       this.isWeeklyProgram = data[MANUAL_WEEKLY_PROG_REGISTER];
 
-      if (this._currentData.length == 0 && data.length !== 0) {
-        // filled first time
-        this.onChange.trigger();
-      }
-
-      this._currentData = data.slice(0); //clone data array
-
-
       return data;
     }).catch(ModbusCrcError, TimeoutError, (err) => {
       this.connection.error();
@@ -113,10 +105,21 @@ class Thermostat {
 
   watch() {
     this.update().then((rawData) => {
-      if (rawData && !_.isEqual(this._currentData, rawData)) {
+      if (!rawData || !rawData.length) {
+        return;
+      }
+
+      if (this._currentData.length == 0) {
+        // filled first time
+        this.onChange.trigger();
+      }
+
+      if (!_.isEqual(this._currentData, rawData)) {
         // check, whether data is changed or not
         this.onChange.trigger();
       }
+
+      this._currentData = rawData.slice(0); //clone data array
     }).finally(() => {
       setTimeout(() => {
         this.watch();

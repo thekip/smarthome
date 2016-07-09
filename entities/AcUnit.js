@@ -11,9 +11,17 @@ const ENABLED_REGISTER = 0,
     TEMP_SETPOINT_REGISTER = 4,
     AMBIENT_TEMP_AC_UNIT_REGISTER = 5,
     AMBIENT_TEMP_EXTERNAL_REGISTER = 22,
-    AC_ACTUAL_SETPOINT_TEMP = 23
+    AC_ACTUAL_SETPOINT_TEMP = 23;
 
 const AMBIENT_TEMP_DEFAULT = -32768;
+
+const MODES = {
+  AUTO: 0,
+  HEAT: 1,
+  DRY: 2,
+  FAN: 3,
+  COOL: 4
+};
 
 class AcUnit {
   constructor(modbusMaster, modbusAddr) {
@@ -21,7 +29,7 @@ class AcUnit {
     this._modbusAddr = modbusAddr;
 
     this.enabled = false;
-    this.unitMode = null;
+    this.mode = null;
     this.fanSpeed = null;
     this.tempSetpoint = null;
     this.ambientTemp = null;
@@ -29,22 +37,14 @@ class AcUnit {
     //refer to documentation http://www.intesis.com/pdf/IntesisBox_ME_AC_MBS_1_manual_eng.pdf  p3.2.4
     this.$ambientTempAcUnit = null;
     this.$actualSetpoint = null;
-
-    this.MODES = {
-      AUTO: 0,
-      HEAT: 1,
-      DRY: 2,
-      FAN: 3,
-      COOL: 4
-    };
-
+    
     this.onChange = new SimpleEvent();
   }
 
   update() {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 24).then((data) => {
       this.enabled = data[ENABLED_REGISTER];
-      this.unitMode = data[UNIT_MODE_REGISTER];
+      this.mode = data[UNIT_MODE_REGISTER];
       this.fanSpeed = data[FAN_SPEED_REGISTER];
       this.tempSetpoint = data[TEMP_SETPOINT_REGISTER];
       this.ambientTemp = data[AMBIENT_TEMP_EXTERNAL_REGISTER];
@@ -117,3 +117,4 @@ class AcUnit {
 }
 
 module.exports = AcUnit;
+module.exports.MODES = MODES;

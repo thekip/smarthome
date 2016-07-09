@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 const SimpleEvent = require('../libs/simple-event');
+const AC_MODES = require('./AcUnit').MODES;
 
 let id = 0;
 
@@ -26,47 +27,45 @@ class Room {
     this.sync = null;
 
     thermostat.onChange.bind(() => {
-      this.onThermostatChange();
+      this._onThermostatChange();
     });
   }
 
-  onThermostatChange() {
-    this._enabled = this._thermostat.enabled;
-    this._tempSetpoint = this._thermostat.tempSetpoint;
-
+  _onThermostatChange() {
     console.log("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
 
     this.onChange.trigger({
       emitter: 'thermostat'
     });
+
     this._updateDumperPosition();
   }
 
   _updateDumperPosition() {
-    //let position = 'close';
+    let position = 'close';
 
-    var position = !this.enabled ? 'close' : 'open';
-    //if (this.enabled && this._ac.mode === this._ac.MODES.COOL) {
-    //    position = (this.ambientTemp - this.tempSetpoint) <= 0 ? 'close' : 'open'
-    //}
-    //
-    //if (this.enabled && this._ac.mode === this._ac.MODES.HEAT) {
-    //    position = (this.tempSetpoint - this.ambientTemp) <= 0 ? 'close' : 'open'
-    //}
+    //var position = !this.enabled ? 'close' : 'open';
+
+    if (this.enabled && this._ac.mode === AC_MODES.COOL) {
+        position = (this.ambientTemp - this.tempSetpoint) <= 0 ? 'close' : 'open'
+    }
+
+    if (this.enabled && this._ac.mode === AC_MODES.HEAT) {
+        position = (this.tempSetpoint - this.ambientTemp) <= 0 ? 'close' : 'open'
+    }
 
     this._dumper[position]()
   }
 
   get enabled() {
-    return this._enabled;
+    return this._thermostat.enabled;
   }
 
   set enabled(value) {
-    if (this._enabled === value) {
+    if (this.enabled === value) {
       return;
     }
 
-    this._enabled = !!value;
     this._thermostat.setEnable(value);
 
     this.onChange.trigger({

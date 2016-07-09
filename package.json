@@ -16,6 +16,9 @@
     "socket.io": "^1.3.5"
   },
   "devDependencies": {
-    "eslint": "^2.0.0"
+    "eslint": "^2.0.0",
+    "sinon": "^1.17.4",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0"
   }
 }

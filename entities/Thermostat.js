@@ -32,16 +32,13 @@ class Thermostat {
     this._modbusAddr = modbusAddr;
 
     this.enabled = false;
-    this.fanSpeed = null;
-    this.mode = null;
     this.roomTemp = null;
     this.tempSetpoint = null;
-    this.isWeeklyProgram = null;
 
     this._currentData = [];
 
     /**
-     *
+     * Emits only if hardware data changed
      * @type {SimpleEvent}
      */
     this.onChange = new SimpleEvent();
@@ -56,23 +53,24 @@ class Thermostat {
       console.error('Connection restored. Thermostat ' + this._modbusAddr);
     });
 
-    noWatch ? this.update() :  this.watch();
+    if (!noWatch) {
+      this.watch();
+    }
   }
 
   update() {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then((data) => {
       this.connection.success();
 
-      if (this._modbusAddr == 10) {
-        console.log('Thermostat', this._modbusAddr, data[ROOM_TEMP_REGISTER] / 2);
-      }
-
       this.enabled = data[ENABLED_REGISTER] != DISABLED_VALUE;
-      this.fanSpeed = data[FAN_SPEED_REGISTER];
-      this.mode = data[MODE_REGISTER];
       this.roomTemp = data[ROOM_TEMP_REGISTER] / 2;
       this.tempSetpoint = data[TEMP_SETPOINT_REGISTER] / 2;
-      this.isWeeklyProgram = data[MANUAL_WEEKLY_PROG_REGISTER];
+
+      if (!_.isEqual(this._currentData, data)) { // check, whether data is changed or not
+        this.onChange.trigger();
+      }
+
+      this._currentData = data.slice(0); //clone data array
 
       return data;
     }).catch(ModbusCrcError, TimeoutError, (err) => {
@@ -112,23 +110,7 @@ class Thermostat {
   }
 
   watch() {
-    this.update().then((rawData) => {
-      if (!rawData || !rawData.length) {
-        return;
-      }
-
-      if (this._currentData.length == 0) {
-        // filled first time
-        this.onChange.trigger();
-      }
-
-      if (!_.isEqual(this._currentData, rawData)) {
-        // check, whether data is changed or not
-        this.onChange.trigger();
-      }
-
-      this._currentData = rawData.slice(0); //clone data array
-    }).finally(() => {
+    this.update().finally(() => {
       setTimeout(() => {
         this.watch();
       }, 300)

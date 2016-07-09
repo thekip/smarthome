@@ -7,16 +7,17 @@ const SimpleEvent = require('./simple-event');
  * Service incapsulate connection state logic, and gives useful events when connection changed.
  */
 class DeviceConnection {
-  constructor() {
+  constructor(maxErrorCount) {
     // by default treat as connection exist
     this._previousStatus = true;
     this._errorCount = 0;
+    this._maxErrorCount = maxErrorCount || MAX_ERROR_COUNT;
     this.onConnectionLost = new SimpleEvent();
     this.onConnectionRestore = new SimpleEvent();
   }
 
   get online() {
-    return this._errorCount <= MAX_ERROR_COUNT;
+    return this._errorCount < this._maxErrorCount;
   }
 
   error(err) {

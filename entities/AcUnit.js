@@ -1,17 +1,19 @@
 'use strict';
 
 const SimpleEvent = require('../libs/simple-event');
-const ModbusCrcError = require('../modbus-rtu/errors').crc;
+const log = require('../libs/log');
+const ModbusCrcError = require('modbus-rtu/errors').crc;
 const TimeoutError = require('bluebird').TimeoutError;
 
-//registers
-const ENABLED_REGISTER = 0,
-    UNIT_MODE_REGISTER = 1,
-    FAN_SPEED_REGISTER = 2,
-    TEMP_SETPOINT_REGISTER = 4,
-    AMBIENT_TEMP_AC_UNIT_REGISTER = 5,
-    AMBIENT_TEMP_EXTERNAL_REGISTER = 22,
-    AC_ACTUAL_SETPOINT_TEMP = 23;
+const REGISTERS = {
+  ENABLED: 0,
+  UNIT_MODE: 1,
+  FAN_SPEED: 2,
+  TEMP_SETPOINT: 4,
+  AMBIENT_TEMP_AC_UNIT: 5,
+  AMBIENT_TEMP_EXTERNAL: 22,
+  AC_ACTUAL_SETPOINT_TEMP: 23
+};
 
 const AMBIENT_TEMP_DEFAULT = -32768;
 
@@ -37,20 +39,20 @@ class AcUnit {
     //refer to documentation http://www.intesis.com/pdf/IntesisBox_ME_AC_MBS_1_manual_eng.pdf  p3.2.4
     this.$ambientTempAcUnit = null;
     this.$actualSetpoint = null;
-    
+
     this.onChange = new SimpleEvent();
   }
 
   update() {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 24).then((data) => {
-      this.enabled = data[ENABLED_REGISTER];
-      this.mode = data[UNIT_MODE_REGISTER];
-      this.fanSpeed = data[FAN_SPEED_REGISTER];
-      this.tempSetpoint = data[TEMP_SETPOINT_REGISTER];
-      this.ambientTemp = data[AMBIENT_TEMP_EXTERNAL_REGISTER];
+      this.enabled = data[REGISTERS.ENABLED];
+      this.mode = data[REGISTERS.UNIT_MODE];
+      this.fanSpeed = data[REGISTERS.FAN_SPEED];
+      this.tempSetpoint = data[REGISTERS.TEMP_SETPOINT];
+      this.ambientTemp = data[REGISTERS.AMBIENT_TEMP_EXTERNAL];
 
-      this.$actualSetpoint = data[AC_ACTUAL_SETPOINT_TEMP];
-      this.$ambientTempAcUnit = data[AMBIENT_TEMP_AC_UNIT_REGISTER]
+      this.$actualSetpoint = data[REGISTERS.AC_ACTUAL_SETPOINT_TEMP];
+      this.$ambientTempAcUnit = data[REGISTERS.AMBIENT_TEMP_AC_UNIT]
     }).catch(ModbusCrcError, TimeoutError, (err) => {
       //do nothing
     })
@@ -61,7 +63,7 @@ class AcUnit {
       return;
     }
     this.tempSetpoint = setpoint;
-    return this._write(TEMP_SETPOINT_REGISTER, setpoint);
+    return this._write(REGISTERS.TEMP_SETPOINT, setpoint);
   }
 
   resetControls() {
@@ -73,7 +75,7 @@ class AcUnit {
       return;
     }
     this.ambientTemp = temp;
-    return this._write(AMBIENT_TEMP_EXTERNAL_REGISTER, temp);
+    return this._write(REGISTERS.AMBIENT_TEMP_EXTERNAL, temp);
   }
 
   setDefaultAmbientTemp() {
@@ -85,8 +87,8 @@ class AcUnit {
       return;
     }
     this.enabled = value;
-    console.log('Enable AC Unit: ', value);
-    return this._write(ENABLED_REGISTER, + value);
+    log.info('Enable AC Unit: ', value);
+    return this._write(REGISTERS.ENABLED, + value);
   }
 
   toString() {
@@ -107,7 +109,7 @@ class AcUnit {
       //  this.onChange.trigger();
       //}
     }).catch((err) => {
-      console.log('ac error', err);
+      log.error('ac error', err);
     }).finally(() => {
       setTimeout(() => {
         this.watch();
@@ -118,3 +120,4 @@ class AcUnit {
 
 module.exports = AcUnit;
 module.exports.MODES = MODES;
+module.exports.REGISTERS = REGISTERS;

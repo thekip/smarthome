@@ -1,10 +1,8 @@
 'use strict';
 
 const _ = require('lodash');
-const constants = require('./modbus-rtu/constants');
-//constants.DEBUG = true;
 
-const devices = require('./controlLoop');
+const devices = require('./hardware');
 const Promise = require('bluebird');
 
 Promise.longStackTraces();
@@ -15,7 +13,9 @@ io.on('connection', (socket) => {
 
   socket.emit('data', {
     acUnit: prepareDto(devices.ac),
-    zones: _.map(devices.rooms, (room) => room.getDto())
+    zones: _.map(devices.rooms, (room) => room.getDto()),
+    intakeFanEnabled: devices.vavCtrl.intakeFanEnabled,
+    exhaustFanEnabled: devices.vavCtrl.exhaustFanEnabled,
   });
 
   socket.on('gui.changeZone', (resp) => {
@@ -23,6 +23,20 @@ io.on('connection', (socket) => {
     _.assign(devices.rooms[resp.id], _.pick(resp.data, ['tempSetpoint', 'sync', 'enabled']) );
 
     socket.broadcast.emit('zoneChanged', devices.rooms[resp.id].getDto());
+  });
+
+  socket.on('changeIntakeFan', (value) => {
+    console.log('enableIntakeFan event', value);
+    devices.vavCtrl.changeIntakeFanStatus(value);
+
+    socket.broadcast.emit('changeIntakeFan', value);
+  });
+
+  socket.on('changeExhaustFanStatus', (value) => {
+    console.log('changeExhaustFanStatus event', value);
+    devices.vavCtrl.changeExhaustFanStatus(value);
+
+    socket.broadcast.emit('changeExhaustFanStatus', value);
   });
 
   devices.ac.onChange.bind(() => {

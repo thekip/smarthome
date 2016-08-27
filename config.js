@@ -18,13 +18,13 @@ module.exports = {
     }
   ],
   bus1: {
-    device: '/dev/ttyUSB1',
+    device: '/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0',
     params: {
       baudrate: 9600
     }
   },
   bus2: {
-    device: '/dev/ttyUSB0',
+    device: '/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0',
     params: {
       baudrate: 2400 //2400
     }

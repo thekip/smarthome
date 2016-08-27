@@ -1,9 +1,12 @@
 'use strict';
 
 const _ = require('lodash');
+const hysteresis = require('../libs/hysteresis');
 const SimpleEvent = require('../libs/simple-event');
 const AC_MODES = require('./AcUnit').MODES;
+const log = require('../libs/log');
 
+const HYSTERESIS_THRESHOLD = 1;
 let id = 0;
 
 class Room {
@@ -21,7 +24,7 @@ class Room {
     this.onChange = new SimpleEvent();
 
     this._thermostat = thermostat;
-    this._dumper = dumper;
+    this.dumper = dumper;
     this._ac = ac;
     this.id = id++;
     this.sync = null;
@@ -29,32 +32,44 @@ class Room {
     thermostat.onChange.bind(() => {
       this._onThermostatChange();
     });
+
+    this._memoizedHysteresis = _.memoize(hysteresis, () => {
+      // create new hysteresis only if this fields is change
+      return this.tempSetpoint + this.enabled + this._ac.mode;
+    });
   }
 
   _onThermostatChange() {
-    console.log("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
+    log.info("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
 
     this.onChange.trigger({
       emitter: 'thermostat'
     });
-
-    this._updateDumperPosition();
   }
 
-  _updateDumperPosition() {
+
+  updateDumperPosition() {
+    if (!this.enabled) {
+      return this.dumper.close();
+    }
+
+    //const check = this._memoizedHysteresis(this.tempSetpoint, HYSTERESIS_THRESHOLD);
+
     let position = 'close';
 
-    //var position = !this.enabled ? 'close' : 'open';
-
-    if (this.enabled && this._ac.mode === AC_MODES.COOL) {
-        position = (this.ambientTemp - this.tempSetpoint) <= 0 ? 'close' : 'open'
+    if (this._ac.mode === AC_MODES.COOL) {
+      position = (this.ambientTemp - this.tempSetpoint) <= 0 ? 'close' : 'open'
     }
 
-    if (this.enabled && this._ac.mode === AC_MODES.HEAT) {
-        position = (this.tempSetpoint - this.ambientTemp) <= 0 ? 'close' : 'open'
+    if (this._ac.mode === AC_MODES.HEAT) {
+      position = (this.tempSetpoint - this.ambientTemp) <= 0 ? 'close' : 'open'
     }
 
-    this._dumper[position]()
+    //console.log(this.enabled ? 'Enabled' : 'Disabled', this.ambientTemp, this.tempSetpoint, this._ac.mode === AC_MODES.COOL ? 'COOL' : 'n/a', position);
+
+    //if (check(this.ambientTemp)) {
+      this.dumper[position]();
+    //}
   }
 
   get enabled() {
@@ -71,8 +86,6 @@ class Room {
     this.onChange.trigger({
       emitter: 'program'
     });
-
-    this._updateDumperPosition();
   }
 
   get ambientTemp() {
@@ -93,9 +106,8 @@ class Room {
     this.onChange.trigger({
       emitter: 'program'
     });
-
-    this._updateDumperPosition();
   }
+
 
   getDto() {
     const dto = {};
@@ -104,6 +116,7 @@ class Room {
       dto[prop] = this[prop];
     });
 
+    dto.dumperOpened = this.dumper.isOpened;
     return dto;
   }
 }

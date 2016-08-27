@@ -1,17 +1,15 @@
 'use strict';
-const test = require('tape');
+const test = require('../tape');
 const sinon = require('sinon');
-const Promise = require("bluebird");
-const tapSpec = require('tap-spec');
 
-const Room = require('./Room');
-const MODES = require('./AcUnit').MODES;
-const SimpleEvent = require('../libs/simple-event');
+const Room = require('./../../entities/Room');
+const AC_MODES = require('./../../entities/AcUnit').MODES;
+const SimpleEvent = require('../../libs/simple-event');
 
-test.createStream()
-  .pipe(tapSpec())
-  .pipe(process.stdout);
-
+/**
+ *
+ * @returns {Dumper}
+ */
 function getDumperMock() {
   const dumper = {
     opened: false,
@@ -26,6 +24,10 @@ function getDumperMock() {
   return dumper;
 }
 
+/**
+ *
+ * @returns {Thermostat}
+ */
 function getThermostatMock() {
   const thermostat = {
     enabled: false,
@@ -46,18 +48,11 @@ function getThermostatMock() {
   return thermostat;
 }
 
-function getAcMock() {
-  return {
-    mode: MODES.COOL,
-  }
-}
 
 function testSetter(t, property, value, thermostatMethod) {
   const thermostat = getThermostatMock();
   const dumper = getDumperMock();
   const room = new Room(thermostat, dumper);
-
-  room._updateDumperPosition = sinon.spy();
 
   const callback = sinon.spy();
   room.onChange.bind(callback);
@@ -67,25 +62,22 @@ function testSetter(t, property, value, thermostatMethod) {
 
   t.ok(callback.calledWith({emitter: 'program'}));
   t.ok(thermostat[thermostatMethod].calledOnce);
-  t.ok(room._updateDumperPosition.calledOnce);
 
   t.end();
 }
 
-test('Should emit event, update thermostat and update dumper position when setpoint changed', (t) => {
+test('Should emit event, update thermostat when setpoint changed', (t) => {
   testSetter(t, 'tempSetpoint', 22, 'setTempSetpoint');
 });
 
-test('Should emit event, update thermostat and update dumper position when enabled changed', (t) => {
+test('Should emit event, update thermostat when enabled changed', (t) => {
   testSetter(t, 'enabled', true, 'setEnable');
 });
 
-test('Should emit event, and update dumper position when thermostat changed', (t) => {
+test('Should emit event when thermostat changed', (t) => {
   const thermostat = getThermostatMock();
   const dumper = getDumperMock();
   const room = new Room(thermostat, dumper);
-
-  room._updateDumperPosition = sinon.spy();
 
   const callback = sinon.spy();
   room.onChange.bind(callback);
@@ -93,8 +85,6 @@ test('Should emit event, and update dumper position when thermostat changed', (t
   thermostat.onChange.trigger();
 
   t.ok(callback.calledWith({emitter: 'thermostat'}));
-  t.ok(room._updateDumperPosition.calledOnce);
-
   t.end();
 });
 
@@ -107,13 +97,14 @@ function testDumperControl(t, ac, cases) {
   const thermostat = getThermostatMock();
   const dumper = getDumperMock();
 
-  new Room(thermostat, dumper, ac);
+  const room = new Room(thermostat, dumper, ac);
 
   for(let spec of cases) {
     thermostat.enabled = spec.enabled;
     thermostat.roomTemp = spec.roomTemp;
     thermostat.tempSetpoint = spec.tempSetpoint;
-    thermostat.onChange.trigger();
+
+    room.updateDumperPosition();
 
     t.equals(dumper.opened, spec.opened, spec.msg);
   }
@@ -123,7 +114,7 @@ function testDumperControl(t, ac, cases) {
 
 test('Check dumper controlling in heating mode', (t) => {
   const ac = {
-    mode: MODES.HEAT
+    mode: AC_MODES.HEAT
   };
 
   const cases = [
@@ -162,7 +153,7 @@ test('Check dumper controlling in heating mode', (t) => {
 
 test('Check dumper controlling in cooling mode', (t) => {
   const ac = {
-    mode: MODES.COOL
+    mode: AC_MODES.COOL
   };
 
   const cases = [
@@ -197,4 +188,98 @@ test('Check dumper controlling in cooling mode', (t) => {
   ];
 
   testDumperControl(t, ac, cases);
+});
+
+test('Check with hysteresis', (t) => {
+  const ac = {
+    mode: AC_MODES.COOL
+  };
+
+  const cases = [
+    {
+      enabled: false,
+      roomTemp: 25,
+      tempSetpoint: 24,
+      opened: false,
+      msg: 'Room disabled, should be closed'
+    },
+    {
+      enabled: true,
+      roomTemp: 25,
+      tempSetpoint: 24,
+      opened: true,
+      msg: 'Room enable, but nothing was changed, should be opened'
+    },
+    {
+      enabled: true,
+      roomTemp: 22,
+      tempSetpoint: 22,
+      opened: false,
+      msg: 'Ambient and setpoint the same, dumper should be closed'
+    },
+    {
+      enabled: true,
+      roomTemp: 23,
+      tempSetpoint: 22,
+      opened: false,
+      msg: 'Ambient higher and inside the threshold, dumper should be closed'
+    },
+    {
+      enabled: true,
+      roomTemp: 24,
+      tempSetpoint: 22,
+      opened: true,
+      msg: 'Ambient higher then threshold, dumper should be open'
+    },
+    {
+      enabled: true,
+      roomTemp: 23,
+      tempSetpoint: 22,
+      opened: true,
+      msg: 'Ambient decreases but inside the the threshold, hysteresis should pass, dumper should be open'
+    },
+    {
+      enabled: true,
+      roomTemp: 22,
+      tempSetpoint: 22,
+      opened: false,
+      msg: 'Ambient the same as setpoint, dumper should be closed'
+    }
+  ];
+
+  testDumperControl(t, ac, cases);
+});
+
+test('Check few rooms hysteresis collision', (t) => {
+  const ac = {
+    mode: AC_MODES.COOL
+  };
+
+  const thermostat1 = getThermostatMock();
+  const thermostat2 = getThermostatMock();
+  const dumper1 = getDumperMock();
+  const dumper2 = getDumperMock();
+
+  const room1 = new Room(thermostat1, dumper1, ac);
+  const room2 = new Room(thermostat2, dumper2, ac);
+
+  thermostat1.roomTemp = 25;
+  thermostat2.roomTemp = 25;
+
+  room1.tempSetpoint = 24;
+  room2.tempSetpoint = 24;
+
+  room1.updateDumperPosition();
+  room2.updateDumperPosition();
+
+  room1.enabled = true;
+  room1.updateDumperPosition();
+  t.ok(dumper1.opened);
+
+
+  room2.enabled = true;
+  room2.updateDumperPosition();
+  t.ok(dumper2.opened);
+
+  t.end();
 });

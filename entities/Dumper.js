@@ -2,21 +2,27 @@
 
 var _ = require('lodash');
 
-var FULL_CLOSED = 255;
+var FULL_CLOSED = 100;
 var FULL_OPENED = 0;
 
 class Dumper {
-  constructor(_port, AnalogShield) {
-    this._position = null;
-    this._analogShield = AnalogShield;
+  /**
+   *
+   * @param {int} _port
+   * @param {VavController} vavCtrl
+     */
+  constructor(_port, vavCtrl) {
+    this._position = 0;
+    this._vavCtrl = vavCtrl;
     this._port = _port;
   }
-  isClosed() {
+
+  get isClosed() {
     return this._position >= FULL_CLOSED;
   }
 
-  isOpened() {
-    return this._position == FULL_OPENED;
+  get isOpened() {
+    return this._position === FULL_OPENED;
   }
 
   close() {
@@ -32,12 +38,12 @@ class Dumper {
    * @param percent
    */
   setPosition(percent) {
-    this._position = Math.round(FULL_CLOSED * percent / 100);
-    this._analogShield.setAnalogOutput(this._port, this._position);
+    this._position = percent;
+    this._vavCtrl.setDumperPosition(this._port, this._position);
   }
 
   getPosition() {
-    return (this._position / FULL_CLOSED) * 100;
+    return this._position;
   }
 }
 

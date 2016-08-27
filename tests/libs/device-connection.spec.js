@@ -1,13 +1,8 @@
-const test = require('tape');
+const test = require('../tape');
 const sinon = require('sinon');
 const _ = require('lodash');
-const tapSpec = require('tap-spec');
 
-const DeviceConnection = require('./device-connection');
-
-test.createStream()
-  .pipe(tapSpec())
-  .pipe(process.stdout);
+const DeviceConnection = require('./../../libs/device-connection');
 
 test('Has default online status', function (t) {
   const connection = new DeviceConnection();

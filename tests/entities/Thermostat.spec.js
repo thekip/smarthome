@@ -1,19 +1,13 @@
-const test = require('tape');
+const test = require('../tape');
 const sinon = require('sinon');
 const Promise = require("bluebird");
-const tapSpec = require('tap-spec');
 
-const Thermostat = require('./Thermostat');
+const Thermostat = require('./../../entities/Thermostat');
 
-test.createStream()
-  .pipe(tapSpec())
-  .pipe(process.stdout);
-
-const modbusThermostatData = [165, 1, 1, 50, 52, 1, 0];
 
 function getModbusMasterMock() {
   const modbus = {
-    data: modbusThermostatData,
+    data: [165, 1, 1, 50, 52, 1, 0],
     readHoldingRegisters: () => {
       return new Promise((resolve) => {
         resolve(modbus.data);
@@ -80,7 +74,7 @@ test('Update() should trigger event when data is changed', (t) => {
   thermostat.onChange.bind(callback);
 
   thermostat.update().then(() => {
-    modbus.data[3] = 60;
+    modbus.data[Thermostat.REGISTERS.ROOM_TEMP] = 60;
 
     thermostat.update().then(() => {
       t.true(callback.secondCall);
@@ -98,7 +92,7 @@ test('Using setters should not create echo effect', (t) => {
 
   thermostat.update().then(() => { //first fill
     thermostat.setTempSetpoint(30).then(() => {
-      modbus.data[4] = 30 * 2; // emulate respond from hardware
+      modbus.data[Thermostat.REGISTERS.TEMP_SETPOINT] = 30 * 2; // emulate respond from hardware
 
       thermostat.update().then(() => {
         t.true(callback.calledOnce);

@@ -66,12 +66,16 @@ function onRoomUpdate() {
   devices.ac.setEnabled(enabledRooms.length !== 0);
 
   if (enabledRooms.length !== 0) {
-    //задаем кондею setpoint по самому нижнему значению из термостатов (для режима обогрев по самому верхнему))
-    devices.ac.setTempSetpoint(Math.ceil(_.min(enabledRooms, 'tempSetpoint').tempSetpoint));
-
-    //задаем в кондей температуру в комнате по самому верхнему значению из термостатов (для режима обогрев по самому нижнему)
-    //Округление для охлаждения производим в нижнюю сторону, а для обгрева в верхнюю сторону
-    devices.ac.setAmbientTemp(Math.floor(_.max(enabledRooms, 'ambientTemp').ambientTemp));
+    // задаем кондею setpoint по самому нижнему значению из термостатов (для режима обогрев по самому верхнему))
+    // задаем в кондей температуру в комнате по самому верхнему значению из термостатов (для режима обогрев по самому нижнему)
+    // Округление для охлаждения производим в нижнюю сторону, а для обгрева в верхнюю сторону
+    if (devices.ac.mode === AcUnit.MODES.COOL) {
+      devices.ac.setTempSetpoint(Math.ceil(_.min(enabledRooms, 'tempSetpoint').tempSetpoint));
+      devices.ac.setAmbientTemp(Math.floor(_.max(enabledRooms, 'ambientTemp').ambientTemp));
+    } else if(devices.ac.mode === AcUnit.MODES.HEAT) {
+      devices.ac.setTempSetpoint(Math.ceil(_.max(enabledRooms, 'tempSetpoint').tempSetpoint));
+      devices.ac.setAmbientTemp(Math.ceil(_.min(enabledRooms, 'ambientTemp').ambientTemp));
+    }
   } else {
     //если термостаты отключены, то сбрасываем на стандартные настройки кондиционера, что бы можно было управлять с его пульта.
     devices.ac.resetControls();

@@ -3,6 +3,7 @@
 const _ = require('lodash');
 
 const devices = require('./hardware');
+const EMITTERS = require('./entities/Room').EMITTERS;
 const Promise = require('bluebird');
 const log = require('./libs/log');
 
@@ -15,7 +16,7 @@ devices.ac.onChange.bind(() => {
 
 devices.rooms.forEach((room) => {
   room.onChange.bind((event) => {
-    if (event.emitter === 'thermostat') { // avoid echo effect, reflect only when event emitted by thermostat
+    if (event.emitter === EMITTERS.thermostat) { // avoid echo effect, reflect only when event emitted by thermostat
       io.emit('zoneChanged', room.getDto());
     }
   });

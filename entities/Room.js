@@ -1,10 +1,14 @@
 'use strict';
 
 const _ = require('lodash');
-const hysteresis = require('../libs/hysteresis');
 const SimpleEvent = require('../libs/simple-event');
 const AC_MODES = require('./AcUnit').MODES;
 const log = require('../libs/log');
+
+const EMITTERS = {
+  thermostat: 'thermostat',
+  api: 'api',
+};
 
 let id = 0;
 
@@ -31,18 +35,13 @@ class Room {
     thermostat.onChange.bind(() => {
       this._onThermostatChange();
     });
-
-    this._memoizedHysteresis = _.memoize(hysteresis, () => {
-      // create new hysteresis only if this fields is change
-      return this.tempSetpoint + this.enabled + this._ac.mode;
-    });
   }
 
   _onThermostatChange() {
     log.info('Room: thermostat is changed! ' + this.id + ': ' + this._thermostat.toString());
 
     this.onChange.trigger({
-      emitter: 'thermostat',
+      emitter: EMITTERS.thermostat,
     });
   }
 
@@ -76,7 +75,7 @@ class Room {
     this._thermostat.setEnable(value);
 
     this.onChange.trigger({
-      emitter: 'program',
+      emitter: EMITTERS.api,
     });
   }
 
@@ -96,7 +95,7 @@ class Room {
     this._thermostat.setTempSetpoint(temp);
 
     this.onChange.trigger({
-      emitter: 'program',
+      emitter: EMITTERS.api,
     });
   }
 
@@ -108,3 +107,4 @@ class Room {
 }
 
 module.exports = Room;
+module.exports.EMITTERS = EMITTERS;

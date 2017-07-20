@@ -3,6 +3,7 @@ const test = require('../tape');
 const sinon = require('sinon');
 
 const Room = require('./../../entities/Room');
+const EMITTERS = require('./../../entities/Room').EMITTERS;
 const AC_MODES = require('./../../entities/AcUnit').MODES;
 const SimpleEvent = require('../../libs/simple-event');
 
@@ -59,7 +60,7 @@ function testSetter(t, property, value, thermostatMethod) {
   room[property] = value;
   t.equals(room[property], value);
 
-  t.ok(callback.calledWith({ emitter: 'program' }));
+  t.ok(callback.calledWith({ emitter: EMITTERS.api }));
   t.ok(thermostat[thermostatMethod].calledOnce);
 
   t.end();
@@ -83,7 +84,7 @@ test('Should emit event when thermostat changed', (t) => {
 
   thermostat.onChange.trigger();
 
-  t.ok(callback.calledWith({ emitter: 'thermostat' }));
+  t.ok(callback.calledWith({ emitter: EMITTERS.thermostat }));
   t.end();
 });
 

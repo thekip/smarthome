@@ -2,7 +2,6 @@
 
 const SimpleEvent = require('../libs/simple-event');
 const _ = require('lodash');
-const log = require('../libs/log');
 const ModbusCrcError = require('modbus-rtu/errors').crc;
 const TimeoutError = require('bluebird').TimeoutError;
 
@@ -41,8 +40,8 @@ class AcUnit {
     this.$ambientTempAcUnit = null;
     this.$actualSetpoint = null;
 
-    this._debouncedWrite = _.debounce(this._write.bind(this));
     this.onChange = new SimpleEvent();
+    this.triggerChangeEvent = _.debounce(this.onChange.trigger.bind(this.onChange));
   }
 
   update() {
@@ -65,7 +64,7 @@ class AcUnit {
       return;
     }
     this.tempSetpoint = setpoint;
-    return this._debouncedWrite(REGISTERS.TEMP_SETPOINT, setpoint);
+    return this._write(REGISTERS.TEMP_SETPOINT, setpoint);
   }
 
   resetControls() {
@@ -77,7 +76,7 @@ class AcUnit {
       return;
     }
     this.ambientTemp = temp;
-    return this._debouncedWrite(REGISTERS.AMBIENT_TEMP_EXTERNAL, temp);
+    return this._write(REGISTERS.AMBIENT_TEMP_EXTERNAL, temp);
   }
 
   setDefaultAmbientTemp() {
@@ -89,7 +88,7 @@ class AcUnit {
       return;
     }
     this.enabled = value;
-    return this._debouncedWrite(REGISTERS.ENABLED, +value);
+    return this._write(REGISTERS.ENABLED, +value);
   }
 
   toString() {
@@ -99,7 +98,7 @@ class AcUnit {
   }
 
   _write(reg, value) {
-    this.onChange.trigger();
+    this.triggerChangeEvent();
     return this._modbusMaster.writeSingleRegister(this._modbusAddr, reg, value);
   }
 

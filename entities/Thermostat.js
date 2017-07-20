@@ -64,10 +64,7 @@ class Thermostat {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then((data) => {
       this.connection.success();
 
-      // this.enabled = data[REGISTERS.ENABLED] != DISABLED_VALUE;
       this.roomTemp = data[REGISTERS.ROOM_TEMP] / 2;
-      // this.tempSetpoint = data[REGISTERS.TEMP_SETPOINT] / 2;
-
       if (this._currentData[REGISTERS.ROOM_TEMP] !== data[REGISTERS.ROOM_TEMP]) { // check, whether data is changed or not
         this.onChange.trigger();
       }
@@ -91,8 +88,6 @@ class Thermostat {
   setEnable(value) {
     this.enabled = !!value;
     this._currentData[REGISTERS.ENABLED] = !value ? DISABLED_VALUE : ENABLED_VALUE;
-
-    // this._modbusMaster.writeSingleRegister(this._modbusAddr, 9, !value ? DISABLED_VALUE : ENABLED_VALUE);
   }
 
   enable() {
@@ -106,11 +101,6 @@ class Thermostat {
   setTempSetpoint(temp) {
     this.tempSetpoint = temp;
     this._currentData[REGISTERS.TEMP_SETPOINT] = temp * 2;
-
-    // if (this._setTempSetpointTask)  {
-    //  this._setTempSetpointTask.abort();
-    // }
-    // this._setTempSetpointTask = this._modbusMaster.writeSingleRegister(this._modbusAddr, 13, temp * 2);
   }
 
   watch() {

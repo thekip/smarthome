@@ -59,6 +59,14 @@ class AcUnit {
     });
   }
 
+  setMode(mode) {
+    if (this.mode === mode) {
+      return;
+    }
+    this.mode = mode;
+    return this._write(REGISTERS.UNIT_MODE, mode);
+  }
+
   setTempSetpoint(setpoint) {
     if ((+this.tempSetpoint) === (+setpoint)) {
       return;

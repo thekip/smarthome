@@ -52,5 +52,12 @@ io.on('connection', (socket) => {
 
     socket.broadcast.emit('changeExhaustFanStatus', value);
   });
+
+  socket.on('changeAcMode', (value) => {
+    log.info('changeAcMode event', value);
+    devices.ac.setMode(value);
+
+    socket.broadcast.emit('changeAcMode', value);
+  });
 });
 

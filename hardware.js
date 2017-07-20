@@ -70,7 +70,9 @@ function printStatus() {
   const dumpersStatus = devices.rooms.map(room => room.dumper.isOpened ? chalk.green('Opened') : 'Closed').join(', ');
   const roomsStatus = devices.rooms.map(room => room.enabled ? chalk.green('Enabled') : 'Disabled').join(', ');
 
-  log.info(chalk.bold('AC status: ' + (devices.ac.enabled ? chalk.green('On') : chalk.yellow('Off'))));
+  const modes = ['Auto', 'Heat', 'Dry', 'Fan', 'Cool'];
+
+  log.info(chalk.bold('AC status: ' + (devices.ac.enabled ? chalk.green('On') : chalk.yellow('Off')) + ' Mode: ' + chalk.yellow(modes[devices.ac.mode])));
   log.info(chalk.bold(`Rooms status: [${roomsStatus}]`));
   log.info(chalk.bold(`Dumpers status: [${dumpersStatus}]`));
 }

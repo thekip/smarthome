@@ -1,6 +1,7 @@
 'use strict';
 
 const SimpleEvent = require('../libs/simple-event');
+const _ = require('lodash');
 const log = require('../libs/log');
 const ModbusCrcError = require('modbus-rtu/errors').crc;
 const TimeoutError = require('bluebird').TimeoutError;
@@ -40,6 +41,7 @@ class AcUnit {
     this.$ambientTempAcUnit = null;
     this.$actualSetpoint = null;
 
+    this._debouncedWrite = _.debounce(this._write.bind(this));
     this.onChange = new SimpleEvent();
   }
 
@@ -63,7 +65,7 @@ class AcUnit {
       return;
     }
     this.tempSetpoint = setpoint;
-    return this._write(REGISTERS.TEMP_SETPOINT, setpoint);
+    return this._debouncedWrite(REGISTERS.TEMP_SETPOINT, setpoint);
   }
 
   resetControls() {
@@ -75,7 +77,7 @@ class AcUnit {
       return;
     }
     this.ambientTemp = temp;
-    return this._write(REGISTERS.AMBIENT_TEMP_EXTERNAL, temp);
+    return this._debouncedWrite(REGISTERS.AMBIENT_TEMP_EXTERNAL, temp);
   }
 
   setDefaultAmbientTemp() {
@@ -88,7 +90,7 @@ class AcUnit {
     }
     this.enabled = value;
     log.info('Enable AC Unit: ', value);
-    return this._write(REGISTERS.ENABLED, + value);
+    return this._debouncedWrite(REGISTERS.ENABLED, + value);
   }
 
   toString() {
@@ -116,6 +118,11 @@ class AcUnit {
       }, 300)
     });
   }
+
+  getDto() {
+    return _.pick(this, ['enabled', 'mode', 'fanSpeed', 'tempSetpoint', 'ambientTemp']);
+  }
+
 }
 
 module.exports = AcUnit;

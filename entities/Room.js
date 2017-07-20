@@ -40,7 +40,7 @@ class Room {
   }
 
   _onThermostatChange() {
-    log.info("Room: thermostat changed! " + this.id + ": " + this._thermostat.toString());
+    log.info("Room: thermostat is changed! " + this.id + ": " + this._thermostat.toString());
 
     this.onChange.trigger({
       emitter: 'thermostat'
@@ -65,7 +65,7 @@ class Room {
       position = (this.tempSetpoint - this.ambientTemp) <= 0 ? 'close' : 'open'
     }
 
-    //console.log(this.enabled ? 'Enabled' : 'Disabled', this.ambientTemp, this.tempSetpoint, this._ac.mode === AC_MODES.COOL ? 'COOL' : 'n/a', position);
+    //log.info(this.enabled ? 'Enabled' : 'Disabled', this.ambientTemp, this.tempSetpoint, this._ac.mode === AC_MODES.COOL ? 'COOL' : 'n/a', position);
 
     //if (check(this.ambientTemp)) {
       this.dumper[position]();
@@ -108,14 +108,8 @@ class Room {
     });
   }
 
-
   getDto() {
-    const dto = {};
-
-    _.each(['tempSetpoint', 'enabled', 'ambientTemp', 'sync', 'id'], (prop) => {
-      dto[prop] = this[prop];
-    });
-
+    const dto = _.pick(this, ['tempSetpoint', 'enabled', 'ambientTemp', 'sync', 'id']);
     dto.dumperOpened = this.dumper.isOpened;
     return dto;
   }

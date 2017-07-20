@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const Promise = require('bluebird');
 
 const Thermostat = require('./../../entities/Thermostat');
+const DEFAULT_SETPOINT = require('./../../entities/Thermostat').DEFAULT_SETPOINT;
 
 function getModbusMasterMock() {
   const modbus = {
@@ -28,29 +29,15 @@ test('Thermostat should properly updates from Modbus', (t) => {
 
   t.false(thermostat.enabled);
   t.equal(thermostat.roomTemp, null);
-  t.equal(thermostat.tempSetpoint, null);
+  t.equal(thermostat.tempSetpoint, DEFAULT_SETPOINT);
 
   thermostat.update().then(() => {
-    t.true(thermostat.enabled);
+    t.false(thermostat.enabled);
     t.equal(thermostat.roomTemp, 25);
-    t.equal(thermostat.tempSetpoint, 26);
+    t.equal(thermostat.tempSetpoint, DEFAULT_SETPOINT);
 
     t.end();
   });
-});
-
-test('Setters must call modbus functions', (t) => {
-  const modbus = getModbusMasterMock();
-  const thermostat = new Thermostat(modbus, 1, true);
-
-  thermostat.setEnable(true);
-  t.true(modbus.writeSingleRegister.called);
-
-  modbus.writeSingleRegister.reset();
-  thermostat.setTempSetpoint(25);
-  t.true(modbus.writeSingleRegister.called);
-
-  t.end();
 });
 
 test('Update() should trigger event when object filled first time', (t) => {
@@ -78,25 +65,6 @@ test('Update() should trigger event when data is changed', (t) => {
     thermostat.update().then(() => {
       t.true(callback.secondCall);
       t.end();
-    });
-  });
-});
-
-test('Using setters should not create echo effect', (t) => {
-  const modbus = getModbusMasterMock();
-  const thermostat = new Thermostat(modbus, 1, true);
-
-  const callback = sinon.spy();
-  thermostat.onChange.bind(callback);
-
-  thermostat.update().then(() => { // first fill
-    thermostat.setTempSetpoint(30).then(() => {
-      modbus.data[Thermostat.REGISTERS.TEMP_SETPOINT] = 30 * 2; // emulate respond from hardware
-
-      thermostat.update().then(() => {
-        t.true(callback.calledOnce);
-        t.end();
-      });
     });
   });
 });

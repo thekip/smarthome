@@ -7,6 +7,8 @@ const log = require('../libs/log');
 const ModbusCrcError = require('modbus-rtu/errors').crc;
 const TimeoutError = require('bluebird').TimeoutError;
 
+const DEFAULT_SETPOINT = 24;
+
 const REGISTERS = {
   ENABLED: 0,
   FAN_SPEED: 1,
@@ -35,7 +37,7 @@ class Thermostat {
 
     this.enabled = false;
     this.roomTemp = null;
-    this.tempSetpoint = 24;
+    this.tempSetpoint = DEFAULT_SETPOINT;
 
     this._currentData = [];
 
@@ -114,3 +116,4 @@ class Thermostat {
 
 module.exports = Thermostat;
 module.exports.REGISTERS = REGISTERS;
+module.exports.DEFAULT_SETPOINT = DEFAULT_SETPOINT;

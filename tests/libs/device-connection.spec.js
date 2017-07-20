@@ -10,13 +10,12 @@ test('Has default online status', function (t) {
   t.end();
 });
 
-
 test('Change status to offline when errors count reached and revert status when success is called', function (t) {
   const maxErrorCount = 10;
   const connection = new DeviceConnection(maxErrorCount);
 
   _.times(maxErrorCount, () => {
-      connection.error()
+    connection.error();
   });
 
   t.false(connection.online);
@@ -27,7 +26,6 @@ test('Change status to offline when errors count reached and revert status when 
 
   t.end();
 });
-
 
 test('Emit events when status changed', function (t) {
   const maxErrorCount = 10;
@@ -40,7 +38,7 @@ test('Emit events when status changed', function (t) {
   connection.onConnectionRestore.bind(successCallback);
 
   _.times(maxErrorCount, () => {
-    connection.error()
+    connection.error();
   });
 
   t.true(lostCallback.called);
@@ -65,7 +63,7 @@ test('Should emit event only once when status is changed', function (t) {
   connection.onConnectionLost.bind(callback);
 
   _.times(20, () => {
-    connection.error()
+    connection.error();
   });
 
   t.true(callback.calledOnce);

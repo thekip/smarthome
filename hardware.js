@@ -20,7 +20,7 @@ const config = require('./config');
 const devices = {
   ac: null,
   rooms: null,
-  vavCtrl: null
+  vavCtrl: null,
 };
 
 module.exports = devices;
@@ -28,8 +28,8 @@ module.exports = devices;
 // My system splitted to 2 buses.
 // One bus is high-speed for acUnit, Analog Shield, and other devices wich support high speed communication
 // and second bus especially for thermostats. Because they didn't support speed higher than 2400.
-const highSpeedBus = new modbus.Master(new SerialPort(config.bus1.device, config.bus1.params), {endPacketTimeout: 50});
-const lowSpeedBus = new modbus.Master(new SerialPort(config.bus2.device, config.bus2.params), {responseTimeout: 800});
+const highSpeedBus = new modbus.Master(new SerialPort(config.bus1.device, config.bus1.params), { endPacketTimeout: 50 });
+const lowSpeedBus = new modbus.Master(new SerialPort(config.bus2.device, config.bus2.params), { responseTimeout: 800 });
 
 devices.ac = new AcUnit(highSpeedBus, config.modbusDevices.acUnitAddress);
 devices.vavCtrl = new VavController(highSpeedBus, config.modbusDevices.analogShieldAddress);
@@ -39,10 +39,10 @@ devices.vavCtrl = new VavController(highSpeedBus, config.modbusDevices.analogShi
  * @type {Room[]}
  */
 devices.rooms = _.map(config.rooms, (roomConfig) => {
-  var thermostat = new Thermostat(lowSpeedBus, roomConfig.thermostatAddress);
-  var dumper = new Dumper(roomConfig.dumperPort, devices.vavCtrl);
+  const thermostat = new Thermostat(lowSpeedBus, roomConfig.thermostatAddress);
+  const dumper = new Dumper(roomConfig.dumperPort, devices.vavCtrl);
 
-  var room = new Room(thermostat, dumper, devices.ac);
+  const room = new Room(thermostat, dumper, devices.ac);
 
   room.onChange.bind(onRoomUpdate);
 
@@ -51,18 +51,18 @@ devices.rooms = _.map(config.rooms, (roomConfig) => {
 
 devices.ac.update().then(() => {
   // just for debug purposes, log AC status
-  console.log(devices.ac.toString());
+  log.info(devices.ac.toString());
 });
 
 function onRoomUpdate() {
-  _.each(devices.rooms, (room, i) => {
+  devices.rooms.forEach((room) => {
     room.updateDumperPosition();
   });
 
-  //находим включенные комнаты
+  // находим включенные комнаты
   const enabledRooms = _.filter(devices.rooms, (room) => room.dumper.isOpened && room.enabled);
 
-  //если есть включенные комнаты, включаем кондей, иначе выключаем
+  // если есть включенные комнаты, включаем кондей, иначе выключаем
   devices.ac.setEnabled(enabledRooms.length !== 0);
 
   if (enabledRooms.length !== 0) {
@@ -72,19 +72,17 @@ function onRoomUpdate() {
     if (devices.ac.mode === AcUnit.MODES.COOL) {
       devices.ac.setTempSetpoint(Math.ceil(_.min(enabledRooms, 'tempSetpoint').tempSetpoint));
       devices.ac.setAmbientTemp(Math.floor(_.max(enabledRooms, 'ambientTemp').ambientTemp));
-    } else if(devices.ac.mode === AcUnit.MODES.HEAT) {
+    } else if (devices.ac.mode === AcUnit.MODES.HEAT) {
       devices.ac.setTempSetpoint(Math.ceil(_.max(enabledRooms, 'tempSetpoint').tempSetpoint));
       devices.ac.setAmbientTemp(Math.ceil(_.min(enabledRooms, 'ambientTemp').ambientTemp));
     }
   } else {
-    //если термостаты отключены, то сбрасываем на стандартные настройки кондиционера, что бы можно было управлять с его пульта.
+    // если термостаты отключены, то сбрасываем на стандартные настройки кондиционера, что бы можно было управлять с его пульта.
     devices.ac.resetControls();
   }
 
-  _.each(devices.rooms, (room, i) => {
-    log.info('Dumper ' + i, room.dumper.isOpened ? 'Opened' : 'Closed' );
-  });
-
+  const dumpersStatus = devices.rooms.map(room => room.dumper.isOpened ? 'Opened' : 'Closed').join(', ');
+  log.info(`Dumpers status: [${dumpersStatus}]`);
 
   devices.ac.update().done();
 }

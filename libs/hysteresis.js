@@ -1,7 +1,7 @@
 'use strict';
 
 function hysteresis(setpoint, threshold) {
-  let previousValue = undefined;
+  let previousValue;
 
   function inHysteresis(value) {
     return Math.abs(value - setpoint) <= threshold;
@@ -15,7 +15,7 @@ function hysteresis(setpoint, threshold) {
       result = true;
     } else if (previousValue && inHysteresis(previousValue) && inHysteresis(value)) {
       console.log('previousValue', previousValue);
-      result =  false;
+      result = false;
     } else {
       console.log('nothing', previousValue);
     }
@@ -23,7 +23,7 @@ function hysteresis(setpoint, threshold) {
     previousValue = value;
 
     return result;
-  }
+  };
 }
 
-module.exports =  hysteresis;
+module.exports = hysteresis;

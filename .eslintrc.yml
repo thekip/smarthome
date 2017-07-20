@@ -120,6 +120,7 @@ rules:
         - { vars: all, args: after-used }
     no-use-before-define: off
     prefer-const: error
+    no-var: error
 
 
     ### Node.js ###
@@ -162,9 +163,6 @@ rules:
     key-spacing:
         - error
         - { beforeColon: false, afterColon: true }
-    max-nested-callbacks:
-        - error
-        - 3
     max-len:
         - 0
         - 120

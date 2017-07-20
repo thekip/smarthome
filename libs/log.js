@@ -12,5 +12,5 @@ module.exports = {
   },
   debug: function logInfo() {
     console.log.apply(console, arguments);
-  }
-}
+  },
+};

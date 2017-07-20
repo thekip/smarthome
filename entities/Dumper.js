@@ -1,9 +1,7 @@
 'use strict';
 
-var _ = require('lodash');
-
-var FULL_CLOSED = 100;
-var FULL_OPENED = 0;
+const FULL_CLOSED = 100;
+const FULL_OPENED = 0;
 
 class Dumper {
   /**

@@ -1,9 +1,8 @@
 const test = require('../tape');
 const sinon = require('sinon');
-const Promise = require("bluebird");
+const Promise = require('bluebird');
 
 const Thermostat = require('./../../entities/Thermostat');
-
 
 function getModbusMasterMock() {
   const modbus = {
@@ -11,7 +10,7 @@ function getModbusMasterMock() {
     readHoldingRegisters: () => {
       return new Promise((resolve) => {
         resolve(modbus.data);
-      })
+      });
     },
     writeSingleRegister: sinon.spy(() => {
       return new Promise((resolve) => {
@@ -79,7 +78,7 @@ test('Update() should trigger event when data is changed', (t) => {
     thermostat.update().then(() => {
       t.true(callback.secondCall);
       t.end();
-    })
+    });
   });
 });
 
@@ -90,14 +89,14 @@ test('Using setters should not create echo effect', (t) => {
   const callback = sinon.spy();
   thermostat.onChange.bind(callback);
 
-  thermostat.update().then(() => { //first fill
+  thermostat.update().then(() => { // first fill
     thermostat.setTempSetpoint(30).then(() => {
       modbus.data[Thermostat.REGISTERS.TEMP_SETPOINT] = 30 * 2; // emulate respond from hardware
 
       thermostat.update().then(() => {
         t.true(callback.calledOnce);
         t.end();
-      })
+      });
     });
   });
 });

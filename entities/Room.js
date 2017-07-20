@@ -6,7 +6,6 @@ const SimpleEvent = require('../libs/simple-event');
 const AC_MODES = require('./AcUnit').MODES;
 const log = require('../libs/log');
 
-const HYSTERESIS_THRESHOLD = 1;
 let id = 0;
 
 class Room {
@@ -40,36 +39,29 @@ class Room {
   }
 
   _onThermostatChange() {
-    log.info("Room: thermostat is changed! " + this.id + ": " + this._thermostat.toString());
+    log.info('Room: thermostat is changed! ' + this.id + ': ' + this._thermostat.toString());
 
     this.onChange.trigger({
-      emitter: 'thermostat'
+      emitter: 'thermostat',
     });
   }
-
 
   updateDumperPosition() {
     if (!this.enabled) {
       return this.dumper.close();
     }
 
-    //const check = this._memoizedHysteresis(this.tempSetpoint, HYSTERESIS_THRESHOLD);
-
     let position = 'close';
 
     if (this._ac.mode === AC_MODES.COOL) {
-      position = (this.ambientTemp - this.tempSetpoint) <= 0 ? 'close' : 'open'
+      position = (this.ambientTemp - this.tempSetpoint) <= 0 ? 'close' : 'open';
     }
 
     if (this._ac.mode === AC_MODES.HEAT) {
-      position = (this.tempSetpoint - this.ambientTemp) <= 0 ? 'close' : 'open'
+      position = (this.tempSetpoint - this.ambientTemp) <= 0 ? 'close' : 'open';
     }
 
-    //log.info(this.enabled ? 'Enabled' : 'Disabled', this.ambientTemp, this.tempSetpoint, this._ac.mode === AC_MODES.COOL ? 'COOL' : 'n/a', position);
-
-    //if (check(this.ambientTemp)) {
-      this.dumper[position]();
-    //}
+    this.dumper[position]();
   }
 
   get enabled() {
@@ -84,7 +76,7 @@ class Room {
     this._thermostat.setEnable(value);
 
     this.onChange.trigger({
-      emitter: 'program'
+      emitter: 'program',
     });
   }
 
@@ -104,7 +96,7 @@ class Room {
     this._thermostat.setTempSetpoint(temp);
 
     this.onChange.trigger({
-      emitter: 'program'
+      emitter: 'program',
     });
   }
 

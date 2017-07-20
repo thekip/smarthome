@@ -18,7 +18,7 @@ function getDumperMock() {
     },
     open: () => {
       dumper.opened = true;
-    }
+    },
   };
 
   return dumper;
@@ -42,12 +42,11 @@ function getThermostatMock() {
     onChange: new SimpleEvent(),
     toString: () => {
       return 'TESTING';
-    }
+    },
   };
 
   return thermostat;
 }
-
 
 function testSetter(t, property, value, thermostatMethod) {
   const thermostat = getThermostatMock();
@@ -60,7 +59,7 @@ function testSetter(t, property, value, thermostatMethod) {
   room[property] = value;
   t.equals(room[property], value);
 
-  t.ok(callback.calledWith({emitter: 'program'}));
+  t.ok(callback.calledWith({ emitter: 'program' }));
   t.ok(thermostat[thermostatMethod].calledOnce);
 
   t.end();
@@ -84,12 +83,12 @@ test('Should emit event when thermostat changed', (t) => {
 
   thermostat.onChange.trigger();
 
-  t.ok(callback.calledWith({emitter: 'thermostat'}));
+  t.ok(callback.calledWith({ emitter: 'thermostat' }));
   t.end();
 });
 
 test('Should update dumper position when AC mode changed', (t) => {
-  //todo implement
+  // todo implement
   t.end();
 });
 
@@ -99,7 +98,7 @@ function testDumperControl(t, ac, cases) {
 
   const room = new Room(thermostat, dumper, ac);
 
-  for(let spec of cases) {
+  for (const spec of cases) {
     thermostat.enabled = spec.enabled;
     thermostat.roomTemp = spec.roomTemp;
     thermostat.tempSetpoint = spec.tempSetpoint;
@@ -114,7 +113,7 @@ function testDumperControl(t, ac, cases) {
 
 test('Check dumper controlling in heating mode', (t) => {
   const ac = {
-    mode: AC_MODES.HEAT
+    mode: AC_MODES.HEAT,
   };
 
   const cases = [
@@ -123,29 +122,29 @@ test('Check dumper controlling in heating mode', (t) => {
       roomTemp: 22,
       tempSetpoint: 25,
       opened: true,
-      msg: 'Setpoint higher then ambient temp, room enabled, dumper should be opened'
+      msg: 'Setpoint higher then ambient temp, room enabled, dumper should be opened',
     },
     {
       enabled: false,
       roomTemp: 22,
       tempSetpoint: 25,
       opened: false,
-      msg: 'Room disabled, dumper should be closed'
+      msg: 'Room disabled, dumper should be closed',
     },
     {
       enabled: true,
       roomTemp: 25,
       tempSetpoint: 25,
       opened: false,
-      msg: 'Setpoint and ambient temp are equals, room enabled, dumper should be closed'
+      msg: 'Setpoint and ambient temp are equals, room enabled, dumper should be closed',
     },
     {
       enabled: true,
       roomTemp: 26,
       tempSetpoint: 25,
       opened: false,
-      msg: 'Setpoint lower then ambient temp, room enabled, dumper should be closed'
-    }
+      msg: 'Setpoint lower then ambient temp, room enabled, dumper should be closed',
+    },
   ];
 
   testDumperControl(t, ac, cases);
@@ -153,7 +152,7 @@ test('Check dumper controlling in heating mode', (t) => {
 
 test('Check dumper controlling in cooling mode', (t) => {
   const ac = {
-    mode: AC_MODES.COOL
+    mode: AC_MODES.COOL,
   };
 
   const cases = [
@@ -162,29 +161,29 @@ test('Check dumper controlling in cooling mode', (t) => {
       roomTemp: 25,
       tempSetpoint: 22,
       opened: true,
-      msg: 'Setpoint lower then ambient temp, room enabled, dumper should be opened'
+      msg: 'Setpoint lower then ambient temp, room enabled, dumper should be opened',
     },
     {
       enabled: false,
       roomTemp: 25,
       tempSetpoint: 22,
       opened: false,
-      msg: 'Room disabled, dumper should be closed'
+      msg: 'Room disabled, dumper should be closed',
     },
     {
       enabled: true,
       roomTemp: 25,
       tempSetpoint: 25,
       opened: false,
-      msg: 'Setpoint and ambient temp are equals, room enabled, dumper should be closed'
+      msg: 'Setpoint and ambient temp are equals, room enabled, dumper should be closed',
     },
     {
       enabled: true,
       roomTemp: 24,
       tempSetpoint: 25,
       opened: false,
-      msg: 'Setpoint higher then ambient temp, room enabled, dumper should be closed'
-    }
+      msg: 'Setpoint higher then ambient temp, room enabled, dumper should be closed',
+    },
   ];
 
   testDumperControl(t, ac, cases);
@@ -192,7 +191,7 @@ test('Check dumper controlling in cooling mode', (t) => {
 
 test('Check with hysteresis', (t) => {
   const ac = {
-    mode: AC_MODES.COOL
+    mode: AC_MODES.COOL,
   };
 
   const cases = [
@@ -201,50 +200,50 @@ test('Check with hysteresis', (t) => {
       roomTemp: 25,
       tempSetpoint: 24,
       opened: false,
-      msg: 'Room disabled, should be closed'
+      msg: 'Room disabled, should be closed',
     },
     {
       enabled: true,
       roomTemp: 25,
       tempSetpoint: 24,
       opened: true,
-      msg: 'Room enable, but nothing was changed, should be opened'
+      msg: 'Room enable, but nothing was changed, should be opened',
     },
     {
       enabled: true,
       roomTemp: 22,
       tempSetpoint: 22,
       opened: false,
-      msg: 'Ambient and setpoint the same, dumper should be closed'
+      msg: 'Ambient and setpoint the same, dumper should be closed',
     },
     {
       enabled: true,
       roomTemp: 23,
       tempSetpoint: 22,
       opened: false,
-      msg: 'Ambient higher and inside the threshold, dumper should be closed'
+      msg: 'Ambient higher and inside the threshold, dumper should be closed',
     },
     {
       enabled: true,
       roomTemp: 24,
       tempSetpoint: 22,
       opened: true,
-      msg: 'Ambient higher then threshold, dumper should be open'
+      msg: 'Ambient higher then threshold, dumper should be open',
     },
     {
       enabled: true,
       roomTemp: 23,
       tempSetpoint: 22,
       opened: true,
-      msg: 'Ambient decreases but inside the the threshold, hysteresis should pass, dumper should be open'
+      msg: 'Ambient decreases but inside the the threshold, hysteresis should pass, dumper should be open',
     },
     {
       enabled: true,
       roomTemp: 22,
       tempSetpoint: 22,
       opened: false,
-      msg: 'Ambient the same as setpoint, dumper should be closed'
-    }
+      msg: 'Ambient the same as setpoint, dumper should be closed',
+    },
   ];
 
   testDumperControl(t, ac, cases);
@@ -252,7 +251,7 @@ test('Check with hysteresis', (t) => {
 
 test('Check few rooms hysteresis collision', (t) => {
   const ac = {
-    mode: AC_MODES.COOL
+    mode: AC_MODES.COOL,
   };
 
   const thermostat1 = getThermostatMock();
@@ -275,7 +274,6 @@ test('Check few rooms hysteresis collision', (t) => {
   room1.enabled = true;
   room1.updateDumperPosition();
   t.ok(dumper1.opened);
-
 
   room2.enabled = true;
   room2.updateDumperPosition();

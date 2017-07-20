@@ -1,6 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
 const SimpleEvent = require('../libs/simple-event');
 const DeviceConnection = require('../libs/device-connection');
 const log = require('../libs/log');
@@ -20,8 +19,8 @@ const REGISTERS = {
   WEEK_HOUR: 7,
 };
 
-const ENABLED_VALUE = 165,
-  DISABLED_VALUE = 90;
+const ENABLED_VALUE = 165;
+const DISABLED_VALUE = 90;
 
 class Thermostat {
   /**
@@ -46,13 +45,13 @@ class Thermostat {
      */
     this.onChange = new SimpleEvent();
 
-    this.connection  = new DeviceConnection();
+    this.connection = new DeviceConnection();
 
-    this.connection.onConnectionLost.bind((err)=> {
+    this.connection.onConnectionLost.bind((err) => {
       log.error('Lost connection to thermostat ' + this._modbusAddr, err);
     });
 
-    this.connection.onConnectionRestore.bind(()=> {
+    this.connection.onConnectionRestore.bind(() => {
       log.error('Connection restored. Thermostat ' + this._modbusAddr);
     });
 
@@ -65,24 +64,24 @@ class Thermostat {
     return this._modbusMaster.readHoldingRegisters(this._modbusAddr, 0, 6).then((data) => {
       this.connection.success();
 
-      //this.enabled = data[REGISTERS.ENABLED] != DISABLED_VALUE;
+      // this.enabled = data[REGISTERS.ENABLED] != DISABLED_VALUE;
       this.roomTemp = data[REGISTERS.ROOM_TEMP] / 2;
-      //this.tempSetpoint = data[REGISTERS.TEMP_SETPOINT] / 2;
+      // this.tempSetpoint = data[REGISTERS.TEMP_SETPOINT] / 2;
 
       if (this._currentData[REGISTERS.ROOM_TEMP] !== data[REGISTERS.ROOM_TEMP]) { // check, whether data is changed or not
         this.onChange.trigger();
       }
 
-      this._currentData = data.slice(0); //clone data array
+      this._currentData = data.slice(0); // clone data array
 
       return data;
     }).catch(ModbusCrcError, TimeoutError, (err) => {
       this.connection.error(err);
-    })
+    });
   }
 
   toString() {
-    return 'Room temp: ' + this.roomTemp + 'C;'
+    return 'Room temp: ' + this.roomTemp + 'C;';
   }
 
   /**
@@ -93,7 +92,7 @@ class Thermostat {
     this.enabled = !!value;
     this._currentData[REGISTERS.ENABLED] = !value ? DISABLED_VALUE : ENABLED_VALUE;
 
-    //this._modbusMaster.writeSingleRegister(this._modbusAddr, 9, !value ? DISABLED_VALUE : ENABLED_VALUE);
+    // this._modbusMaster.writeSingleRegister(this._modbusAddr, 9, !value ? DISABLED_VALUE : ENABLED_VALUE);
   }
 
   enable() {
@@ -108,17 +107,17 @@ class Thermostat {
     this.tempSetpoint = temp;
     this._currentData[REGISTERS.TEMP_SETPOINT] = temp * 2;
 
-    //if (this._setTempSetpointTask)  {
+    // if (this._setTempSetpointTask)  {
     //  this._setTempSetpointTask.abort();
-    //}
-    //this._setTempSetpointTask = this._modbusMaster.writeSingleRegister(this._modbusAddr, 13, temp * 2);
+    // }
+    // this._setTempSetpointTask = this._modbusMaster.writeSingleRegister(this._modbusAddr, 13, temp * 2);
   }
 
   watch() {
     this.update().finally(() => {
       setTimeout(() => {
         this.watch();
-      }, 300)
+      }, 300);
     });
   }
 }

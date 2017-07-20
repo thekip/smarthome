@@ -74,7 +74,7 @@ class SimpleEvent {
    * @param {function} fn
    */
   unbind(fn) {
-    this._handlers.splice( this._handlers.indexOf(fn), 1);
+    this._handlers.splice(this._handlers.indexOf(fn), 1);
   }
 
   /**

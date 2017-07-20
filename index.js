@@ -10,13 +10,13 @@ Promise.longStackTraces();
 const io = require('./server').io;
 
 devices.ac.onChange.bind(() => {
-  io.emit('acUnitChanged', devices.ac.getDto())
+  io.emit('acUnitChanged', devices.ac.getDto());
 });
 
 devices.rooms.forEach((room) => {
   room.onChange.bind((event) => {
     if (event.emitter === 'thermostat') { // avoid echo effect, reflect only when event emitted by thermostat
-      io.emit('zoneChanged', room.getDto())
+      io.emit('zoneChanged', room.getDto());
     }
   });
 });
@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
 
   socket.on('gui.changeZone', (resp) => {
     log.info('change Zone event', resp);
-    _.assign(devices.rooms[resp.id], _.pick(resp.data, ['tempSetpoint', 'sync', 'enabled']) );
+    _.assign(devices.rooms[resp.id], _.pick(resp.data, ['tempSetpoint', 'sync', 'enabled']));
 
     socket.broadcast.emit('zoneChanged', devices.rooms[resp.id].getDto());
   });
@@ -52,6 +52,4 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('changeExhaustFanStatus', value);
   });
 });
-
-
 

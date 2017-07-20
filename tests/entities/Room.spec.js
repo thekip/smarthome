@@ -13,12 +13,12 @@ const SimpleEvent = require('../../libs/simple-event');
  */
 function getDumperMock() {
   const dumper = {
-    opened: false,
+    isOpened: false,
     close: () => {
-      dumper.opened = false;
+      dumper.isOpened = false;
     },
     open: () => {
-      dumper.opened = true;
+      dumper.isOpened = true;
     },
   };
 
@@ -88,6 +88,26 @@ test('Should emit event when thermostat changed', (t) => {
   t.end();
 });
 
+test('Should be active only when enabled and dumper is open', (t) => {
+  const thermostat = getThermostatMock();
+  thermostat.enabled = true;
+  const dumper = getDumperMock();
+  const ac = {
+    mode: AC_MODES.COOL,
+  };
+
+  const room = new Room(thermostat, dumper, ac);
+  room.updateDumperPosition();
+
+  t.ok(room.isActive, 'Thermostat enabled, dumper enabled');
+
+  thermostat.enabled = false;
+  room.updateDumperPosition();
+  t.notOk(room.isActive, 'Thermostat disabled');
+
+  t.end();
+});
+
 test('Should update dumper position when AC mode changed', (t) => {
   // todo implement
   t.end();
@@ -106,7 +126,7 @@ function testDumperControl(t, ac, cases) {
 
     room.updateDumperPosition();
 
-    t.equals(dumper.opened, spec.opened, spec.msg);
+    t.equals(dumper.isOpened, spec.opened, spec.msg);
   }
 
   t.end();

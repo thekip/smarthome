@@ -63,6 +63,10 @@ class Room {
     this.dumper[position]();
   }
 
+  get isActive() {
+    return this.enabled && this.dumper.isOpened;
+  }
+
   get enabled() {
     return this._thermostat.enabled;
   }

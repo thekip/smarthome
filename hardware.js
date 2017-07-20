@@ -59,8 +59,7 @@ function onRoomUpdate() {
     room.updateDumperPosition();
   });
 
-  // находим включенные комнаты
-  const enabledRooms = _.filter(devices.rooms, (room) => room.dumper.isOpened && room.enabled);
+  const enabledRooms = _.filter(devices.rooms, (room) => room.isActive);
 
   // если есть включенные комнаты, включаем кондей, иначе выключаем
   devices.ac.setEnabled(enabledRooms.length !== 0);

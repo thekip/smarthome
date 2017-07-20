@@ -89,7 +89,6 @@ class AcUnit {
       return;
     }
     this.enabled = value;
-    log.info('Enable AC Unit: ', value);
     return this._debouncedWrite(REGISTERS.ENABLED, +value);
   }
 

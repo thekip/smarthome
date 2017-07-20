@@ -4,6 +4,7 @@ const _ = require('lodash');
 const SimpleEvent = require('../libs/simple-event');
 const AC_MODES = require('./AcUnit').MODES;
 const log = require('../libs/log');
+const chalk = require('chalk');
 
 const EMITTERS = {
   thermostat: 'thermostat',
@@ -38,7 +39,7 @@ class Room {
   }
 
   _onThermostatChange() {
-    log.info('Room: thermostat is changed! ' + this.id + ': ' + this._thermostat.toString());
+    log.info(chalk.cyan(`Room: thermostat is updated! ${this.id}: ` + this._thermostat.toString()));
 
     this.onChange.trigger({
       emitter: EMITTERS.thermostat,

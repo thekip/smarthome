@@ -11,6 +11,7 @@ const VavController = require('./entities/VavController');
 const Room = require('./entities/Room');
 const log = require('./libs/log');
 const acUpdateLogic = require('./logic/ac-update-logic').acUpdateLogic;
+const chalk = require('chalk');
 
 const config = require('./config');
 
@@ -61,9 +62,15 @@ function onRoomUpdate() {
   });
 
   acUpdateLogic(devices.ac, devices.rooms);
-
-  const dumpersStatus = devices.rooms.map(room => room.dumper.isOpened ? 'Opened' : 'Closed').join(', ');
-  log.info(`Dumpers status: [${dumpersStatus}]`);
-
   devices.ac.update().done();
+  printStatus();
+}
+
+function printStatus() {
+  const dumpersStatus = devices.rooms.map(room => room.dumper.isOpened ? chalk.green('Opened') : 'Closed').join(', ');
+  const roomsStatus = devices.rooms.map(room => room.enabled ? chalk.green('Enabled') : 'Disabled').join(', ');
+
+  log.info(chalk.bold('AC status: ' + (devices.ac.enabled ? chalk.green('On') : chalk.yellow('Off'))));
+  log.info(chalk.bold(`Rooms status: [${roomsStatus}]`));
+  log.info(chalk.bold(`Dumpers status: [${dumpersStatus}]`));
 }

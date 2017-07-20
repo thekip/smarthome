@@ -80,7 +80,7 @@ class Thermostat {
   }
 
   toString() {
-    return 'Room temp: ' + this.roomTemp + 'C;';
+    return `Room temp: ${this.roomTemp} C;`;
   }
 
   /**

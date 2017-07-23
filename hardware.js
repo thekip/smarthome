@@ -29,8 +29,13 @@ module.exports = devices;
 // My system splitted to 2 buses.
 // One bus is high-speed for acUnit, Analog Shield, and other devices wich support high speed communication
 // and second bus especially for thermostats. Because they didn't support speed higher than 2400.
-const highSpeedBus = new ModbusMaster(new SerialPort(config.bus1.device, config.bus1.params));
-const lowSpeedBus = new ModbusMaster(new SerialPort(config.bus2.device, config.bus2.params), { responseTimeout: 800 });
+const highSpeedBus = new ModbusMaster(
+  new SerialPort(config.bus1.device, config.bus1.params), { queueTimeout: 0 }
+);
+
+const lowSpeedBus = new ModbusMaster(
+  new SerialPort(config.bus2.device, config.bus2.params), { queueTimeout: 0, responseTimeout: 800 }
+);
 
 devices.ac = new AcUnit(highSpeedBus, config.modbusDevices.acUnitAddress);
 devices.vavCtrl = new VavController(highSpeedBus, config.modbusDevices.analogShieldAddress);

@@ -25,6 +25,11 @@ const MODES = {
 };
 
 class AcUnit {
+  /**
+   *
+   * @param {ModbusMaster} modbusMaster
+   * @param {number} modbusAddr
+   */
   constructor(modbusMaster, modbusAddr) {
     this._modbusMaster = modbusMaster;
     this._modbusAddr = modbusAddr;

@@ -25,7 +25,7 @@ const DISABLED_VALUE = 90;
 class Thermostat {
   /**
    *
-   * @param {Master} modbusMaster
+   * @param {ModbusMaster} modbusMaster
    * @param {Number} modbusAddr
    * @param {boolean} noWatch
      */

@@ -7,8 +7,8 @@ const INTAKE_FAN_REG = 6;
 class VavController {
   /**
    *
-   * @param {Master} modbusMaster
-   * @param modbusAddr
+   * @param {ModbusMaster} modbusMaster
+   * @param {number} modbusAddr
      */
   constructor(modbusMaster, modbusAddr) {
     this._modbusMaster = modbusMaster;
@@ -43,7 +43,6 @@ class VavController {
     this.exhaustFanEnabled = value;
     return this._modbusMaster.writeSingleRegister(this._modbusAddr, EXHAUST_FAN_REG, value ? 1 : 0, 10);
   }
-
 }
 
 module.exports = VavController;

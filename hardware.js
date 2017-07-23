@@ -1,6 +1,5 @@
 ﻿'use strict';
 
-const _ = require('lodash');
 const { ModbusMaster } = require('modbus-rtu');
 const SerialPort = require('serialport');
 
@@ -40,7 +39,7 @@ devices.vavCtrl = new VavController(highSpeedBus, config.modbusDevices.analogShi
  *
  * @type {Room[]}
  */
-devices.rooms = _.map(config.rooms, (roomConfig) => {
+devices.rooms = config.rooms.map((roomConfig) => {
   const thermostat = new Thermostat(lowSpeedBus, roomConfig.thermostatAddress);
   const dumper = new Dumper(roomConfig.dumperPort, devices.vavCtrl);
 

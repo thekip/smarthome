@@ -109,6 +109,10 @@ class Room {
     dto.dumperOpened = this.dumper.isOpened;
     return dto;
   }
+
+  setDto(dto) {
+    Object.assign(this, dto);
+  }
 }
 
 module.exports = Room;

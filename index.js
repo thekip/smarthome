@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const devices = require('./hardware');
 const EMITTERS = require('./entities/Room').EMITTERS;
 const Promise = require('bluebird');
@@ -27,14 +25,15 @@ io.on('connection', (socket) => {
 
   socket.emit('data', {
     acUnit: devices.ac.getDto(),
-    zones: _.map(devices.rooms, (room) => room.getDto()),
+    zones: devices.rooms.map((room) => room.getDto()),
     intakeFanEnabled: devices.vavCtrl.intakeFanEnabled,
     exhaustFanEnabled: devices.vavCtrl.exhaustFanEnabled,
   });
 
   socket.on('gui.changeZone', (resp) => {
     log.info('change Zone event', resp);
-    _.assign(devices.rooms[resp.id], _.pick(resp.data, ['tempSetpoint', 'sync', 'enabled']));
+    const { tempSetpoint, sync, enabled } = resp.data;
+    devices.rooms[resp.id].setDto({ tempSetpoint, sync, enabled });
 
     socket.broadcast.emit('zoneChanged', devices.rooms[resp.id].getDto());
   });

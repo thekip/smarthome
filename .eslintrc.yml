@@ -41,10 +41,6 @@ rules:
     use-isnan: error
     valid-jsdoc: off
     valid-typeof: error
-    no-restricted-properties:
-        - error
-        - { object: Object, property: assign }
-
 
     ### Best Practices ###
 

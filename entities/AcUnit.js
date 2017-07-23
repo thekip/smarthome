@@ -2,8 +2,7 @@
 
 const SimpleEvent = require('../libs/simple-event');
 const _ = require('lodash');
-const ModbusCrcError = require('modbus-rtu/errors').crc;
-const TimeoutError = require('bluebird').TimeoutError;
+const { ModbusCrcError, ModbusResponseTimeout } = require('modbus-rtu/lib/errors');
 
 const REGISTERS = {
   ENABLED: 0,
@@ -54,7 +53,7 @@ class AcUnit {
 
       this.$actualSetpoint = data[REGISTERS.AC_ACTUAL_SETPOINT_TEMP];
       this.$ambientTempAcUnit = data[REGISTERS.AMBIENT_TEMP_AC_UNIT];
-    }).catch(ModbusCrcError, TimeoutError, () => {
+    }).catch(ModbusCrcError, ModbusResponseTimeout, () => {
       // do nothing
     });
   }

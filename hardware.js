@@ -1,8 +1,8 @@
 ﻿'use strict';
 
 const _ = require('lodash');
-const modbus = require('modbus-rtu');
-const SerialPort = require('serialport').SerialPort;
+const { ModbusMaster } = require('modbus-rtu');
+const SerialPort = require('serialport');
 
 const AcUnit = require('./entities/AcUnit');
 const Thermostat = require('./entities/Thermostat');
@@ -30,8 +30,8 @@ module.exports = devices;
 // My system splitted to 2 buses.
 // One bus is high-speed for acUnit, Analog Shield, and other devices wich support high speed communication
 // and second bus especially for thermostats. Because they didn't support speed higher than 2400.
-const highSpeedBus = new modbus.Master(new SerialPort(config.bus1.device, config.bus1.params), { endPacketTimeout: 50 });
-const lowSpeedBus = new modbus.Master(new SerialPort(config.bus2.device, config.bus2.params), { responseTimeout: 800 });
+const highSpeedBus = new ModbusMaster(new SerialPort(config.bus1.device, config.bus1.params));
+const lowSpeedBus = new ModbusMaster(new SerialPort(config.bus2.device, config.bus2.params), { responseTimeout: 800 });
 
 devices.ac = new AcUnit(highSpeedBus, config.modbusDevices.acUnitAddress);
 devices.vavCtrl = new VavController(highSpeedBus, config.modbusDevices.analogShieldAddress);

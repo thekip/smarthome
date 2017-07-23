@@ -3,9 +3,7 @@
 const SimpleEvent = require('../libs/simple-event');
 const DeviceConnection = require('../libs/device-connection');
 const log = require('../libs/log');
-
-const ModbusCrcError = require('modbus-rtu/errors').crc;
-const TimeoutError = require('bluebird').TimeoutError;
+const { ModbusCrcError, ModbusResponseTimeout } = require('modbus-rtu/lib/errors');
 
 const DEFAULT_SETPOINT = 24;
 
@@ -74,7 +72,7 @@ class Thermostat {
       this._currentData = data.slice(0); // clone data array
 
       return data;
-    }).catch(ModbusCrcError, TimeoutError, (err) => {
+    }).catch(ModbusCrcError, ModbusResponseTimeout, (err) => {
       this.connection.error(err);
     });
   }

@@ -28,4 +28,5 @@ node_modules
 
 .idea
 
-frontend
+frontend/*
+!frontend/.gitkeep

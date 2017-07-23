@@ -48,7 +48,7 @@ class Thermostat {
     this.connection = new DeviceConnection();
 
     this.connection.onConnectionLost.bind((err) => {
-      log.error('Lost connection to thermostat ' + this._modbusAddr, err);
+      log.error('Lost connection to thermostat ' + this._modbusAddr, 'Error:', err.message);
     });
 
     this.connection.onConnectionRestore.bind(() => {

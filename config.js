@@ -1,4 +1,5 @@
 module.exports = {
+  httpPort: 80,
   modbusDevices: {
     acUnitAddress: 1,
     analogShieldAddress: 2,

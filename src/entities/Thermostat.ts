@@ -5,9 +5,9 @@ import { Log } from '../libs/log';
 import { ModbusCrcError, ModbusResponseTimeout } from 'modbus-rtu/lib/errors';
 import Bluebird = require('bluebird');
 
-const DEFAULT_SETPOINT = 24;
+export const DEFAULT_SETPOINT = 24;
 
-const ThermostatRegister = {
+export const ThermostatRegister = {
   ENABLED: 0,
   FAN_SPEED: 1,
   MODE: 2,
@@ -62,7 +62,6 @@ export class Thermostat {
       if (this.currentData[ThermostatRegister.ROOM_TEMP] !== data[ThermostatRegister.ROOM_TEMP]) { // check, whether data is changed or not
         this.onChange.emit();
       }
-
       this.currentData = data.slice(0); // clone data array
 
       return data;

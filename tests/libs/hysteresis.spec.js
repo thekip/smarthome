@@ -3,7 +3,7 @@
 const test = require('../tape');
 const _ = require('lodash');
 
-const hysteresis = require('./../../libs/hysteresis');
+const hysteresis = require('../../src/libs/hysteresis');
 
 test('Check most common hysteresis cases', (t) => {
   const check = hysteresis(22, 1);

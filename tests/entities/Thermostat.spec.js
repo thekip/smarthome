@@ -2,8 +2,8 @@ const test = require('../tape');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 
-const Thermostat = require('./../../entities/Thermostat');
-const DEFAULT_SETPOINT = require('./../../entities/Thermostat').DEFAULT_SETPOINT;
+const Thermostat = require('../../src/entities/Thermostat');
+const DEFAULT_SETPOINT = require('../../src/entities/Thermostat').DEFAULT_SETPOINT;
 
 function getModbusMasterMock() {
   const modbus = {

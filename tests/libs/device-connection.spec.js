@@ -2,7 +2,7 @@ const test = require('../tape');
 const sinon = require('sinon');
 const _ = require('lodash');
 
-const DeviceConnection = require('./../../libs/device-connection');
+const DeviceConnection = require('../../src/libs/device-connection');
 
 test('Has default online status', function (t) {
   const connection = new DeviceConnection();

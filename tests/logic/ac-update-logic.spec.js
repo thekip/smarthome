@@ -3,8 +3,8 @@ const test = require('../tape');
  * @type {Sinon.SinonStatic}
  */
 const sinon = require('sinon');
-const logic = require('../../logic/ac-update-logic').acUpdateLogic;
-const MODES = require('../../entities/AcUnit').MODES;
+const logic = require('../../src/logic/ac-update-logic').acUpdateLogic;
+const MODES = require('../../src/entities/AcUnit').MODES;
 
 function getAcUnitMock(mode) {
   let enabled = false;

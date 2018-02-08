@@ -40,6 +40,8 @@ const lowSpeedBus = new ModbusMaster(
 devices.ac = new AcUnit(highSpeedBus, config.modbusDevices.acUnitAddress);
 devices.vavCtrl = new VavController(highSpeedBus, config.modbusDevices.analogShieldAddress);
 
+devices.ac.onChange.bind(onStateChange);
+
 /**
  *
  * @type {Room[]}
@@ -50,7 +52,7 @@ devices.rooms = config.rooms.map((roomConfig) => {
 
   const room = new Room(thermostat, dumper, devices.ac);
 
-  room.onChange.bind(onRoomUpdate);
+  room.onChange.bind(onStateChange);
 
   return room;
 });
@@ -60,7 +62,7 @@ devices.ac.update().then(() => {
   log.info(devices.ac.toString());
 });
 
-function onRoomUpdate() {
+function onStateChange() {
   devices.rooms.forEach((room) => {
     room.updateDumperPosition();
   });

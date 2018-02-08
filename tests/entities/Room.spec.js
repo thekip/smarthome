@@ -3,8 +3,8 @@ const test = require('../tape');
 const sinon = require('sinon');
 
 const Room = require('../../src/entities/Room');
-const EMITTERS = require('../../src/entities/Room').EMITTERS;
-const AC_MODES = require('../../src/entities/AcUnit').MODES;
+const EMITTERS = require('../../src/entities/Room').RoomChangeEmitter;
+const AC_MODES = require('../../src/entities/AcUnit').AcMode;
 const SimpleEvent = require('../../src/libs/simple-event');
 
 /**

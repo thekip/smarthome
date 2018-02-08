@@ -4,7 +4,7 @@ const test = require('../tape');
  */
 const sinon = require('sinon');
 const logic = require('../../src/logic/ac-update-logic').acUpdateLogic;
-const MODES = require('../../src/entities/AcUnit').MODES;
+const MODES = require('../../src/entities/AcUnit').AcMode;
 
 function getAcUnitMock(mode) {
   let enabled = false;

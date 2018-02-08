@@ -1,5 +1,3 @@
-'use strict';
-
 function hysteresis(setpoint, threshold) {
   let previousValue;
 

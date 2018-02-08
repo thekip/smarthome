@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   httpPort: 80,
   modbusDevices: {
     acUnitAddress: 1,

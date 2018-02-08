@@ -2,7 +2,7 @@
   "name": "smarthome",
   "version": "0.0.1",
   "scripts": {
-    "watch": "forever -w index.js",
+    "watch": "forever -w index.js --color",
     "start": "forever start index.js",
     "test": "cross-env NODE_ENV=test tape tests/**/*.spec.js | tap-spec"
   },

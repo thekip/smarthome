@@ -25,6 +25,7 @@
     "proxyquire": "^1.8.0",
     "sinon": "^1.17.4",
     "tap-spec": "^4.1.1",
-    "tape": "^4.8.0"
+    "tape": "^4.8.0",
+    "typescript": "^2.7.1"
   }
 }

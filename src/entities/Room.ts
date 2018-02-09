@@ -1,4 +1,4 @@
-import { pick } from 'lodash-es';
+import { pick } from 'lodash';
 import { EventEmitter } from '../libs/event-emitter/event-emitter';
 import { Log } from '../libs/log';
 import { AcUnit, AcMode as AC_MODES } from './AcUnit';

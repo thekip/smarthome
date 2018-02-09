@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Room should return DTO 1`] = `
+Object {
+  "ambientTemp": 28,
+  "dumperOpened": false,
+  "enabled": false,
+  "id": 6,
+  "sync": false,
+  "tempSetpoint": 25,
+}
+`;

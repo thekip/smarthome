@@ -1,15 +1,17 @@
-import { EventEmitter } from '../event-emitter';
+import { EventEmitter } from './event-emitter';
+import { EventSubscription } from './event-subscription';
+import _ from 'lodash';
 
 describe('Libs: EventEmitter', () => {
   describe('basically', () => {
-    let emitter;
-    let firstHandler;
-    let secondHandler;
+    let emitter: EventEmitter;
+    let firstHandler: jest.Mock;
+    let secondHandler: jest.Mock;
 
     beforeEach(() => {
       emitter = new EventEmitter();
-      firstHandler = jasmine.createSpy('first event handler');
-      secondHandler = jasmine.createSpy('second event handler');
+      firstHandler = jest.fn();
+      secondHandler = jest.fn();
       emitter.subscribe(firstHandler);
       emitter.subscribe(secondHandler);
     });
@@ -41,7 +43,7 @@ describe('Libs: EventEmitter', () => {
 
   it('should trigger handler once if it registered via once()', () => {
     const event = new EventEmitter();
-    const handler = jasmine.createSpy('event handler');
+    const handler = jest.fn();
 
     event.subscribeOnce(handler);
 
@@ -61,7 +63,7 @@ describe('Libs: EventEmitter', () => {
 
   it('should properly work if another handler will be attached or removed inside an executing handler', () => {
     const emitter = new EventEmitter();
-    const handler = jasmine.createSpy();
+    const handler = jest.fn();
 
     emitter.subscribe(() => {
       emitter.off(handler);
@@ -79,7 +81,7 @@ describe('Libs: EventEmitter', () => {
     const bazEvent = new EventEmitter();
 
     const emitter = EventEmitter.some(fooEvent, barEvent, bazEvent);
-    const handler = jasmine.createSpy();
+    const handler = jest.fn();
 
     emitter.subscribe(handler);
 
@@ -90,13 +92,13 @@ describe('Libs: EventEmitter', () => {
   });
 
   describe('returned subscription', () => {
-    let emitter;
-    let handler;
-    let subscription;
+    let emitter: EventEmitter;
+    let handler: jest.Mock;
+    let subscription: EventSubscription;
 
     beforeEach(() => {
       emitter = new EventEmitter();
-      handler = jasmine.createSpy();
+      handler = jest.fn();
       subscription = emitter.subscribe(handler);
     });
 
@@ -109,7 +111,7 @@ describe('Libs: EventEmitter', () => {
 
     it('should allow concat with another subscription', () => {
       const emitterSecond = new EventEmitter();
-      const handlerSecond = jasmine.createSpy();
+      const handlerSecond = jest.fn();
 
       subscription.add(emitterSecond.subscribe(handlerSecond));
 
@@ -121,16 +123,5 @@ describe('Libs: EventEmitter', () => {
       expect(handler).not.toHaveBeenCalled();
       expect(handlerSecond).not.toHaveBeenCalled();
     });
-
-    it('should allow attach scope', () => {
-      const scope = {
-        $on: jasmine.createSpy(),
-      };
-
-      subscription.attachScope(scope);
-
-      expect(scope.$on).toHaveBeenCalledWith('$destroy', subscription.dispose);
-    });
   });
 });
-

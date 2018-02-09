@@ -1,6 +1,5 @@
 import { EventEmitter } from './event-emitter/event-emitter';
 const MAX_ERROR_COUNT = 10;
-const SimpleEvent = require('./simple-event');
 
 /**
  * Service incapsulate connection state logic, and gives useful events when connection changed.

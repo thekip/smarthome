@@ -1,5 +1,5 @@
 export default {
-  httpPort: 80,
+  httpPort: 3000,
   modbusDevices: {
     acUnitAddress: 1,
     analogShieldAddress: 2,

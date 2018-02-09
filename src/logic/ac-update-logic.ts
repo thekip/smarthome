@@ -1,4 +1,4 @@
-import { minBy, maxBy } from 'lodash-es';
+import { minBy, maxBy } from 'lodash';
 import { AcUnit, AcMode as AC_MODES } from '../entities/AcUnit';
 import { Room } from '../entities/Room';
 

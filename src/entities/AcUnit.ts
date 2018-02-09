@@ -1,4 +1,4 @@
-import { debounce, pick } from 'lodash-es';
+import { debounce, pick } from 'lodash';
 import { ModbusMaster } from 'modbus-rtu';
 import { ModbusCrcError, ModbusResponseTimeout } from 'modbus-rtu/lib/errors';
 import { EventEmitter } from '../libs/event-emitter/event-emitter';

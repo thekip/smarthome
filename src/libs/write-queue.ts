@@ -8,12 +8,12 @@ export class QueueMap {
     private queueConstructor: () => WriteQueue,
   ) {}
 
-  public add(queueId: number, task: ICancelableTask) {
+  public add<T>(queueId: number, task: ICancelableTask<T>): Bluebird<T> {
     if (!this.map[queueId]) {
       this.map[queueId] = this.queueConstructor();
     }
 
-    this.map[queueId].add(task);
+    return this.map[queueId].add(task);
   }
 
   get length(): number {

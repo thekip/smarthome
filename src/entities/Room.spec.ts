@@ -2,7 +2,7 @@ import { EventEmitter } from '../libs/event-emitter';
 import { AcMode, AcUnit } from './AcUnit';
 import { Dumper } from './Dumper';
 import { Room, RoomChangeEmitter } from './Room';
-import { Thermostat } from './Thermostat';
+import { Thermostat } from './thermostat/Thermostat';
 
 describe('Room', () => {
   function getDumperMock() {

@@ -2,7 +2,7 @@
 import { AcUnit } from './entities/AcUnit';
 import { Dumper } from './entities/Dumper';
 import { Room } from './entities/Room';
-import { Thermostat } from './entities/Thermostat';
+import { Thermostat } from './entities/thermostat/Thermostat';
 import { VavController } from './entities/VavController';
 import SerialPort from 'serialport';
 //import SerialPort = require('serialport');

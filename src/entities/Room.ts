@@ -4,7 +4,7 @@ import { Log } from '../libs/log';
 import { AcUnit, AcMode as AC_MODES } from './AcUnit';
 import chalk from 'chalk';
 import { Dumper } from './Dumper';
-import { Thermostat } from './Thermostat';
+import { Thermostat } from './thermostat/Thermostat';
 
 export enum RoomChangeEmitter {
   thermostat = 'thermostat',

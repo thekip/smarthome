@@ -3,16 +3,18 @@ import { ModbusMaster } from 'modbus-rtu';
 import {
   DEFAULT_SETPOINT, DISABLED_VALUE, ENABLED_VALUE, Thermostat,
   ThermostatRegister,
-} from './Thermostat';
+} from './';
 
 type MockedModbusMaster = Partial<ModbusMaster> & { data: number[] };
 
 function getModbusMasterMock(): MockedModbusMaster {
+  const roomTemp = 25 * 2;
+  const setpoint = 26 * 2;
   const modbus: Partial<ModbusMaster> & { data: number[] } = {
-    data: [165, 1, 1, 50, 52, 1, 0],
+    data: [ENABLED_VALUE, 1, 1, roomTemp, setpoint, 1, 0],
     readHoldingRegisters: () => {
       return new Promise((resolve) => {
-        resolve(modbus.data);
+        resolve(modbus.data.slice(0));
       });
     },
     writeSingleRegister: jest.fn(() => new Promise((resolve) => {
@@ -85,14 +87,19 @@ describe('Thermostat', () => {
 
       expect(handler).toHaveBeenCalledTimes(1);
     });
+
+    it('should consider changes via API', async () => {
+      await thermostat.update();
+      handler.mockReset();
+
+      await thermostat.setEnable(false);
+      modbus.data[ThermostatRegister.ENABLED] = DISABLED_VALUE;
+
+      await thermostat.setTempSetpoint(30);
+      modbus.data[ThermostatRegister.TEMP_SETPOINT] = 30 * 2;
+
+      await thermostat.update();
+      expect(handler).toHaveBeenCalledTimes(0);
+    });
   });
-
-  //it('should set state to thermostat', () => {
-  //  const setters = [
-  //    { method: 'setEnable', value: true },
-  //    { method: 'setTempSetpoint', value: 20 },
-  //  ];
-  //
-  //})
-
 });

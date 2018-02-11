@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Nodemon\" -c \"cyan.bold,green.bold\" \"tsc -w\" \"nodemon\"",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.app.json",
     "start": "node dst/index.js",
     "test": "jest"
   },

@@ -1,18 +1,21 @@
-import { ModbusMaster } from 'modbus-rtu';
 import { Promise } from 'bluebird';
-import { DEFAULT_SETPOINT, Thermostat, ThermostatRegister } from './Thermostat';
+import { ModbusMaster } from 'modbus-rtu';
+import {
+  DEFAULT_SETPOINT, DISABLED_VALUE, ENABLED_VALUE, Thermostat,
+  ThermostatRegister,
+} from './Thermostat';
 
-type MockedModbusMaster = Partial<ModbusMaster> & {data: number[]};
+type MockedModbusMaster = Partial<ModbusMaster> & { data: number[] };
 
 function getModbusMasterMock(): MockedModbusMaster {
-  const modbus: Partial<ModbusMaster> & {data: number[]} = {
+  const modbus: Partial<ModbusMaster> & { data: number[] } = {
     data: [165, 1, 1, 50, 52, 1, 0],
     readHoldingRegisters: () => {
       return new Promise((resolve) => {
         resolve(modbus.data);
       });
     },
-    writeSingleRegister: jest.fn(() =>  new Promise((resolve) => {
+    writeSingleRegister: jest.fn(() => new Promise((resolve) => {
         resolve();
       }),
     ),
@@ -21,7 +24,7 @@ function getModbusMasterMock(): MockedModbusMaster {
   return modbus;
 }
 
-describe('Thermostat',  () => {
+describe('Thermostat', () => {
   let modbus: MockedModbusMaster;
   let thermostat: Thermostat;
 
@@ -31,15 +34,19 @@ describe('Thermostat',  () => {
   });
 
   it('Thermostat object should receive changes from Modbus', async () => {
-    expect(thermostat.enabled).toBeFalsy();
-    expect(thermostat.roomTemp).toBeFalsy();
-    expect(thermostat.tempSetpoint).toBe(DEFAULT_SETPOINT);
+    expect(thermostat).toMatchObject({
+      enabled: false,
+      roomTemp: -1,
+      tempSetpoint: DEFAULT_SETPOINT,
+    });
 
     await thermostat.update();
 
-    expect(thermostat.enabled).toBeFalsy();
-    expect(thermostat.roomTemp).toBe(25);
-    expect(thermostat.tempSetpoint).toBe(DEFAULT_SETPOINT);
+    expect(thermostat).toMatchObject({
+      enabled: true,
+      roomTemp: 25,
+      tempSetpoint: 26,
+    });
   });
 
   describe('Updating from modbus', () => {
@@ -58,11 +65,18 @@ describe('Thermostat',  () => {
     it('should trigger event when state is changed', async () => {
       await thermostat.update();
 
-      modbus.data[ThermostatRegister.ROOM_TEMP] = 60;
+      const watchedRegisters = [
+        { register: ThermostatRegister.ROOM_TEMP, value: 30 * 2 },
+        { register: ThermostatRegister.ENABLED, value: DISABLED_VALUE },
+        { register: ThermostatRegister.TEMP_SETPOINT, value: 22 * 2 },
+      ];
 
-      await thermostat.update();
+      for (const item of watchedRegisters) {
+        modbus.data[item.register] = item.value;
+        await thermostat.update();
+      }
 
-      expect(handler).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenCalledTimes(watchedRegisters.length + 1);
     });
 
     it('should NOT trigger event when the same state comes', async () => {
@@ -71,5 +85,14 @@ describe('Thermostat',  () => {
 
       expect(handler).toHaveBeenCalledTimes(1);
     });
-  })
+  });
+
+  //it('should set state to thermostat', () => {
+  //  const setters = [
+  //    { method: 'setEnable', value: true },
+  //    { method: 'setTempSetpoint', value: 20 },
+  //  ];
+  //
+  //})
+
 });
